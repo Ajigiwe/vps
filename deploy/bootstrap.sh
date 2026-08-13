@@ -11,11 +11,17 @@ ADMIN_USER="admin"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-CHANGE_ME}"
 DB_PASSWORD="${DB_PASSWORD:-CHANGE_ME}"
 
-echo "==> Installing system packages"
+echo "==> Installing system packages (Python 3.13 via deadsnakes, PostgreSQL, Nginx)"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
-apt-get install -y python3.13 python3.13-venv python3-pip postgresql redis-server \
-  nginx git curl build-essential libpq-dev
+apt-get install -y software-properties-common
+add-apt-repository -y ppa:deadsnakes/ppa
+apt-get update -y
+apt-get install -y python3.13 python3.13-venv python3.13-dev postgresql nginx \
+  git curl build-essential libpq-dev
+
+# Redis is reused from the running LiveKit Docker container (127.0.0.1:6379).
+echo "==> Redis: reusing existing Docker redis on 127.0.0.1:6379 (no native install)"
 
 echo "==> Creating app user"
 id -u "$APP_USER" >/dev/null 2>&1 || useradd -r -m -d "$APP_DIR" -s /bin/bash "$APP_USER"
@@ -36,8 +42,8 @@ runuser -u postgres -- psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='podium'"
 runuser -u postgres -- psql -tAc "SELECT 1 FROM pg_database WHERE datname='podium'" | grep -q 1 || \
   runuser -u postgres -- createdb -O podium podium
 
-echo "==> Redis"
-systemctl enable --now redis-server || systemctl enable --now redis
+echo "==> Redis (reused from Docker container, already up)"
+echo "    Redis container: livekitpodiumclassonline-redis-1 on 127.0.0.1:6379"
 
 echo "==> Backend .env"
 if [ ! -f backend/.env ]; then

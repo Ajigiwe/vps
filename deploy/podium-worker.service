@@ -1,7 +1,7 @@
 [Unit]
 Description=Podium Worker (Redis background tasks)
-After=network.target redis-server.service
-Wants=redis-server.service
+After=network.target docker.service
+Wants=docker.service
 
 [Service]
 Type=simple
