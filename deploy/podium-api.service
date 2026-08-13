@@ -1,0 +1,20 @@
+[Unit]
+Description=Podium API (FastAPI/uvicorn)
+After=network.target postgresql.service redis-server.service
+Wants=postgresql.service redis-server.service
+
+[Service]
+Type=simple
+User=podium
+Group=podium
+WorkingDirectory=/srv/apps/podium/backend
+EnvironmentFile=/srv/apps/podium/backend/.env
+ExecStart=/srv/apps/podium/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1
+Restart=always
+RestartSec=3
+# Allow the API to read the application registry and manage nginx/systemd where configured
+SupplementaryGroups=www-data
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target
