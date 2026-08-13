@@ -1,4 +1,4 @@
-# IFNOTUS Application Registry
+# Podium Application Registry
 
 Place one YAML file per application in this directory.
 Files with `.example` suffix are ignored.

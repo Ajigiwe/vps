@@ -85,7 +85,7 @@ class SslService:
     async def get_certificate(self, domain_name: str) -> SslCertificateSchema:
         entity = await self._domains.get_by_name(domain_name.lower().strip())
         if entity is None:
-            raise NotFoundError(f"Domain '{domain_name}' not registered in IFNOTUS.")
+            raise NotFoundError(f"Domain '{domain_name}' not registered in Podium.")
         return await self._build_certificate(entity)
 
     async def validate_readiness(self, domain_name: str) -> SslReadinessResponse:
@@ -95,11 +95,11 @@ class SslService:
 
         entity = await self._domains.get_by_name(name)
         if entity is None:
-            raise NotFoundError(f"Domain '{domain_name}' not registered in IFNOTUS.")
+            raise NotFoundError(f"Domain '{domain_name}' not registered in Podium.")
 
         if not entity.enabled:
             checks["domain_enabled"] = False
-            messages.append("Domain is disabled in IFNOTUS.")
+            messages.append("Domain is disabled in Podium.")
         else:
             checks["domain_enabled"] = True
 
@@ -244,7 +244,7 @@ class SslService:
         domain = body.domain.lower().strip()
         entity = await self._domains.get_by_name(domain)
         if entity is None:
-            raise NotFoundError(f"Domain '{domain}' not registered in IFNOTUS.")
+            raise NotFoundError(f"Domain '{domain}' not registered in Podium.")
 
         nginx = await asyncio.to_thread(self._nginx.read, None, domain)
         parent = None

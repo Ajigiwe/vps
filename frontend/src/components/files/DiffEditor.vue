@@ -74,7 +74,7 @@ function ensureWorkers() {
 
 function ensureDiffThemes() {
   if (themesReady) return
-  monaco.editor.defineTheme('ifnotus-diff-dark', {
+  monaco.editor.defineTheme('Podium-diff-dark', {
     base: 'vs-dark',
     inherit: true,
     rules: [],
@@ -90,7 +90,7 @@ function ensureDiffThemes() {
       'diffEditor.diagonalFill': '#33415555',
     },
   })
-  monaco.editor.defineTheme('ifnotus-diff-light', {
+  monaco.editor.defineTheme('Podium-diff-light', {
     base: 'vs',
     inherit: true,
     rules: [],
@@ -111,7 +111,7 @@ function ensureDiffThemes() {
 
 function monacoTheme() {
   const dark = props.colorMode === 'dark' || (props.colorMode === 'auto' && theme.isDark)
-  return dark ? 'ifnotus-diff-dark' : 'ifnotus-diff-light'
+  return dark ? 'Podium-diff-dark' : 'Podium-diff-light'
 }
 
 function lineHeightFor(size: number) {

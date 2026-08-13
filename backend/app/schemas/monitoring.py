@@ -174,7 +174,7 @@ class ManagedService(SchemaBase):
     display_name: str | None = None
     category: ServiceCategory = ServiceCategory.SYSTEM
     relevant: bool = False
-    managed_by_ifnotus: bool = False
+    managed_by_podium: bool = False
     app_id: str | None = None
     ports: list[int] = Field(default_factory=list)
 

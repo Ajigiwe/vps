@@ -61,7 +61,7 @@ async function verify() {
       @submit.prevent="step === 'register' ? register() : verify()"
     >
       <h1 class="text-xl font-semibold text-slate-900">
-        {{ step === 'register' ? 'Create IFNOTUS account' : 'Verify email' }}
+        {{ step === 'register' ? 'Create Podium account' : 'Verify email' }}
       </h1>
       <p class="mt-1 text-sm text-slate-500">
         {{ step === 'register' ? 'Customer signup for hosting.' : message }}

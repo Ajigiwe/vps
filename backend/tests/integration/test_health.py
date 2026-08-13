@@ -11,7 +11,7 @@ from app.main import create_app
 def test_settings() -> Settings:
     return Settings(
         secret_key="test-secret-key-at-least-32-characters-long",
-        database_url="postgresql+asyncpg://ifnotus:ifnotus@localhost:5432/ifnotus_test",
+        database_url="postgresql+asyncpg://Podium:Podium@localhost:5432/Podium_test",
         redis_url="redis://localhost:6379/1",
         environment=Environment.TESTING,
         debug=True,

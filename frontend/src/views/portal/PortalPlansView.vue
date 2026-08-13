@@ -8,7 +8,7 @@ const router = useRouter()
 const plans = ref<HostingPlan[]>([])
 const loading = ref(true)
 const error = ref('')
-const brand = ref('IFNOTUS')
+const brand = ref('Podium')
 
 onMounted(async () => {
   try {
@@ -24,7 +24,7 @@ onMounted(async () => {
 })
 
 function choose(plan: HostingPlan) {
-  localStorage.setItem('ifnotus_selected_plan', plan.id)
+  localStorage.setItem('Podium_selected_plan', plan.id)
   router.push({ name: 'portal-signup', query: { plan: plan.slug } })
 }
 </script>
@@ -55,7 +55,7 @@ function choose(plan: HostingPlan) {
       <div class="mb-8 max-w-2xl">
         <h1 class="text-3xl font-semibold tracking-tight text-slate-900">Hosting plans</h1>
         <p class="mt-2 text-slate-600">
-          Pick a plan, add a domain, pay with Paystack, and IFNOTUS provisions your environment.
+          Pick a plan, add a domain, pay with Paystack, and Podium provisions your environment.
         </p>
       </div>
 

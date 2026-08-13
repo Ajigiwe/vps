@@ -9,7 +9,7 @@ from app.schemas.applications import NginxSiteSchema
 
 NGINX_SITES_ENABLED = Path("/etc/nginx/sites-enabled")
 NGINX_SITES_AVAILABLE = Path("/etc/nginx/sites-available")
-STUB_MARKER = "# managed-by-ifnotus: disabled-stub"
+STUB_MARKER = "# managed-by-Podium: disabled-stub"
 
 
 class NginxReader:

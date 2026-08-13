@@ -17,7 +17,7 @@ def custom_openapi(app: FastAPI, settings: Settings) -> dict[str, Any]:
         title=settings.app_name,
         version=settings.app_version,
         description=(
-            "IFNOTUS — Infrastructure and Operations Platform API.\n\n"
+            "Podium — Infrastructure and Operations Platform API.\n\n"
             "Combines infrastructure monitoring, server management, deployment automation, "
             "application management, and email administration."
         ),
@@ -31,7 +31,7 @@ def custom_openapi(app: FastAPI, settings: Settings) -> dict[str, Any]:
     )
 
     schema["info"]["x-logo"] = {
-        "url": "https://ifnotus.io/logo.png",
+        "url": "https://Podium.io/logo.png",
         "altText": settings.app_name,
     }
 

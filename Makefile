@@ -4,7 +4,7 @@ dev:
 	docker compose up
 
 dev-local:
-	@echo "Starting IFNOTUS locally (backend :8000, frontend :5173)..."
+	@echo "Starting Podium locally (backend :8000, frontend :5173)..."
 	@echo "Run in separate terminals:"
 	@echo "  make backend"
 	@echo "  make frontend"
@@ -16,7 +16,7 @@ frontend:
 	cd frontend && npm run dev
 
 seed-admin:
-	cd backend && . .venv/bin/activate && ifnotus-seed-admin admin admin123
+	cd backend && . .venv/bin/activate && podium-seed-admin admin admin123
 
 setup-local: migrate seed-admin
 	@echo "Database migrated and admin user ready (admin / admin123)"

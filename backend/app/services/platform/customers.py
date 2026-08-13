@@ -116,7 +116,7 @@ class CustomerService:
             # Staff can still have a customer profile later; for portal login require customer role
             customer = await self.get_by_user_id(user.id)
             if customer is None:
-                raise AuthenticationError("This login is for IFNOTUS customer accounts.")
+                raise AuthenticationError("This login is for Podium customer accounts.")
         customer = await self.require_for_user(user.id)
         user.last_login_at = datetime.now(UTC)
         return user, customer
@@ -162,10 +162,10 @@ class CustomerService:
             from email.message import EmailMessage
 
             msg = EmailMessage()
-            msg["Subject"] = "Verify your IFNOTUS account"
-            msg["From"] = self._settings.smtp_from or "noreply@ifnotus.space"
+            msg["Subject"] = "Verify your Podium account"
+            msg["From"] = self._settings.smtp_from or "noreply@Podium.space"
             msg["To"] = email
-            msg.set_content(f"Your IFNOTUS verification code is: {code}\n\nValid for 24 hours.")
+            msg.set_content(f"Your Podium verification code is: {code}\n\nValid for 24 hours.")
             with smtplib.SMTP(self._settings.smtp_host, self._settings.smtp_port, timeout=10) as smtp:
                 if self._settings.smtp_use_tls:
                     smtp.starttls()

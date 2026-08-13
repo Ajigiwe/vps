@@ -1,4 +1,4 @@
-"""IFNOTUS product-layer schemas (catalog, customers, orders, environments)."""
+"""Podium product-layer schemas (catalog, customers, orders, environments)."""
 
 from datetime import datetime
 from decimal import Decimal
@@ -28,7 +28,7 @@ class HostingPlanSchema(SchemaBase):
 
 class HostingPlanListResponse(SchemaBase):
     items: list[HostingPlanSchema]
-    brand: str = "IFNOTUS"
+    brand: str = "Podium"
     currency: str = "GHS"
 
 
@@ -39,8 +39,8 @@ class DomainTldPriceSchema(SchemaBase):
 
 
 class CatalogMetaResponse(SchemaBase):
-    brand: str = "IFNOTUS"
-    panel_name: str = "IFNOTUS Panel"
+    brand: str = "Podium"
+    panel_name: str = "Podium Panel"
     currency: str = "GHS"
     domain_prices: list[DomainTldPriceSchema]
     updated_at: datetime | None = None
@@ -202,7 +202,7 @@ class NotificationResponse(SchemaBase):
 
 
 class CustomerDashboardResponse(SchemaBase):
-    brand: str = "IFNOTUS"
+    brand: str = "Podium"
     customer: CustomerResponse
     credits: AiCreditAccountResponse
     environments: list[EnvironmentResponse]

@@ -67,7 +67,7 @@ _AUDIT_VIEW_PREFIXES = (
 
 def detect_source(user_agent: str | None) -> str:
     ua = (user_agent or "").lower()
-    if any(token in ua for token in ("curl/", "wget/", "httpie/", "python-requests", "go-http", "ifnotus-cli")):
+    if any(token in ua for token in ("curl/", "wget/", "httpie/", "python-requests", "go-http", "Podium-cli")):
         return "cli"
     if "ssh" in ua:
         return "ssh"

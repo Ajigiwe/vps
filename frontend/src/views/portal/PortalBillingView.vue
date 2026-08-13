@@ -27,7 +27,7 @@ onMounted(async () => {
 <template>
   <div class="flex min-h-screen items-center justify-center bg-[#f4f6f8] px-4">
     <div class="w-full max-w-md rounded border border-slate-200 bg-white p-6 text-center">
-      <p class="font-semibold">IFNOTUS billing</p>
+      <p class="font-semibold">Podium billing</p>
       <p class="mt-3 text-sm text-slate-600">{{ message }}</p>
     </div>
   </div>

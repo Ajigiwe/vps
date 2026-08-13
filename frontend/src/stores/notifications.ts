@@ -15,7 +15,7 @@ export interface Notification {
   read: boolean
 }
 
-const READ_KEY = 'ifnotus_read_notifications'
+const READ_KEY = 'Podium_read_notifications'
 
 function loadReadIds(): Set<string> {
   try {

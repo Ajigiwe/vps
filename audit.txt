@@ -1,4 +1,4 @@
-IFNOTUS Platform Audit
+Podium Platform Audit
 ======================
 Date: 2026-07-06
 Scope: Static/mock/placeholder data, live API wiring, UI responsiveness
@@ -116,22 +116,22 @@ Port collector:
 
 Auth fixes applied:
   - Login accepts username or email
-  - User email schema uses str (admin@ifnotus.local valid)
+  - User email schema uses str (admin@Podium.local valid)
   - Password hashing via bcrypt (Python 3.14 compatible)
 
 
 REGISTERED APPLICATIONS
 -----------------------
-  applications/ifnotus-api.yaml      — IFNOTUS API (FastAPI, port 8000)
-  applications/ifnotus-frontend.yaml — IFNOTUS Frontend (Vite, port 5173)
+  applications/podium-api.yaml      — Podium API (FastAPI, port 8000)
+  applications/podium-frontend.yaml — Podium Frontend (Vite, port 5173)
 
-Note: ifnotus-api.yaml paths.root is "." — verify relative to applications/ dir
+Note: podium-api.yaml paths.root is "." — verify relative to applications/ dir
       if git/ssl/nginx readers need repo root.
 
 
 KNOWN GAPS / FOLLOW-UPS
 -----------------------
-  1. Deployment history empty until .ifnotus/deployments/ JSON files exist per app
+  1. Deployment history empty until .podium/deployments/ JSON files exist per app
   2. Chart history sparse until ring buffer fills (~5 min at 5s intervals)
   3. No dedicated /applications route — Quick Actions "Apps" goes to /servers
   4. monitoring_log_paths defaults to /var/log/syslog (Linux); adjust for macOS

@@ -14,12 +14,12 @@ class PluginMetadata:
     name: str
     version: str
     description: str
-    author: str = "IFNOTUS"
+    author: str = "Podium"
     dependencies: tuple[str, ...] = ()
 
 
 class PluginBase(ABC):
-    """Base class for IFNOTUS plugins."""
+    """Base class for Podium plugins."""
 
     metadata: PluginMetadata
 

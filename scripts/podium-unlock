@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-ENV=/srv/apps/ifnotus/backend/.env
+ENV=/srv/apps/podium/backend/.env
 
 set_env() {
   local key="$1" val="$2"
@@ -16,11 +16,11 @@ get_env() { grep -E "^$1=" "$ENV" | head -1 | cut -d= -f2- || true; }
 case "${1:-status}" in
   off)
     set_env ADMIN_LOCKDOWN_ENABLED false
-    systemctl restart ifnotus-api
+    systemctl restart podium-api
     echo "Lockdown disabled."
     ;;
   add)
-    ip="${2:?usage: ifnotus-unlock add <IP>}"
+    ip="${2:?usage: podium-unlock add <IP>}"
     cur="$(get_env ADMIN_ALLOWED_IPS)"
     if [ -z "$cur" ]; then
       new="$ip"
@@ -29,11 +29,11 @@ case "${1:-status}" in
     fi
     set_env ADMIN_ALLOWED_IPS "$new"
     set_env ADMIN_LOCKDOWN_ENABLED true
-    systemctl restart ifnotus-api
+    systemctl restart podium-api
     echo "Allowed $ip for panel."
     ;;
   pending)
-    cd /srv/apps/ifnotus/backend
+    cd /srv/apps/podium/backend
     set -a; . .env; set +a
     ./.venv/bin/python - <<'PY'
 from app.services import auth_challenges
@@ -49,8 +49,8 @@ else:
 PY
     ;;
   approve)
-    id="${2:?usage: ifnotus-unlock approve <CHALLENGE_ID>}"
-    cd /srv/apps/ifnotus/backend
+    id="${2:?usage: podium-unlock approve <CHALLENGE_ID>}"
+    cd /srv/apps/podium/backend
     set -a; . .env; set +a
     ./.venv/bin/python - <<PY
 from app.services import auth_challenges
@@ -62,12 +62,12 @@ print("IP", ch.ip_address)
 print("USER", ch.username_or_email)
 print()
 print("Enter this CODE on the web login approval screen.")
-print("Or run: ifnotus-unlock trust-ip", ch.ip_address)
+print("Or run: podium-unlock trust-ip", ch.ip_address)
 PY
     ;;
   trust-ip)
-    ip="${2:?usage: ifnotus-unlock trust-ip <IP>}"
-    cd /srv/apps/ifnotus/backend
+    ip="${2:?usage: podium-unlock trust-ip <IP>}"
+    cd /srv/apps/podium/backend
     set -a; . .env; set +a
     ./.venv/bin/python - <<PY
 import asyncio
@@ -86,7 +86,7 @@ async def main():
     print("Trusted $ip for panel.")
 asyncio.run(main())
 PY
-    systemctl restart ifnotus-api
+    systemctl restart podium-api
     ;;
   ssh-open)
     ufw limit 22/tcp || ufw allow 22/tcp
@@ -96,10 +96,10 @@ PY
   status)
     echo "--- .env ---"; grep -E '^ADMIN_' "$ENV" || true
     echo "--- ufw ---"; ufw status | head -20 || true
-    echo "--- api ---"; systemctl is-active ifnotus-api
+    echo "--- api ---"; systemctl is-active podium-api
     ;;
   *)
-    echo "usage: ifnotus-unlock {pending|approve <ID>|trust-ip <IP>|add <IP>|off|ssh-open|status}"
+    echo "usage: podium-unlock {pending|approve <ID>|trust-ip <IP>|add <IP>|off|ssh-open|status}"
     exit 1
     ;;
 esac

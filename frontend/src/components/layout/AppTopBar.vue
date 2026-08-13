@@ -41,7 +41,7 @@ const titles: Record<string, string> = {
   settings: 'Settings',
 }
 
-const pageTitle = computed(() => titles[String(route.name)] || 'IFNOTUS')
+const pageTitle = computed(() => titles[String(route.name)] || 'Podium')
 
 async function handleLogout() {
   menuOpen.value = false

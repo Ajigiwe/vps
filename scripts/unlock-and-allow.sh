@@ -6,10 +6,10 @@ set -euo pipefail
 IPS=(154.161.35.90 154.161.146.139)
 
 for ip in "${IPS[@]}"; do
-  if command -v ifnotus-unlock >/dev/null 2>&1; then
-    ifnotus-unlock add "$ip" || true
+  if command -v podium-unlock >/dev/null 2>&1; then
+    podium-unlock add "$ip" || true
   else
-    ENV=/srv/apps/ifnotus/backend/.env
+    ENV=/srv/apps/podium/backend/.env
     if grep -q '^ADMIN_ALLOWED_IPS=' "$ENV"; then
       cur=$(grep '^ADMIN_ALLOWED_IPS=' "$ENV" | cut -d= -f2-)
       echo "$cur" | grep -q "$ip" || sed -i "s|^ADMIN_ALLOWED_IPS=.*|ADMIN_ALLOWED_IPS=${cur},${ip}|" "$ENV"
@@ -17,13 +17,13 @@ for ip in "${IPS[@]}"; do
       echo "ADMIN_ALLOWED_IPS=$ip" >> "$ENV"
       echo "ADMIN_LOCKDOWN_ENABLED=true" >> "$ENV"
     fi
-    ufw allow from "$ip" to any port 22 proto tcp comment 'ifnotus-admin' || true
+    ufw allow from "$ip" to any port 22 proto tcp comment 'Podium-admin' || true
   fi
 done
 
 ufw reload || true
 
-cd /srv/apps/ifnotus/backend
+cd /srv/apps/podium/backend
 set -a; . .env; set +a
 ./.venv/bin/python - <<'PY'
 import asyncio
@@ -62,10 +62,10 @@ async def main():
 asyncio.run(main())
 PY
 
-systemctl restart ifnotus-api
+systemctl restart podium-api
 sleep 4
 echo "=== status ==="
-grep -E '^ADMIN_' /srv/apps/ifnotus/backend/.env || true
+grep -E '^ADMIN_' /srv/apps/podium/backend/.env || true
 ufw status | grep 22 || true
-systemctl is-active ifnotus-api
+systemctl is-active podium-api
 echo "DONE"

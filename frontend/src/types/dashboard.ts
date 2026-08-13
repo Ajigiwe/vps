@@ -184,7 +184,7 @@ export interface ApiManagedService {
   display_name?: string | null
   category?: ServiceCategory
   relevant?: boolean
-  managed_by_ifnotus?: boolean
+  managed_by_podium?: boolean
   app_id?: string | null
   ports?: number[]
 }

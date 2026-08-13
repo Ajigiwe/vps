@@ -6,12 +6,7 @@ import {
   IconChart,
   IconChevron,
   IconDashboard,
-  IconDatabase,
   IconDeploy,
-  IconFolder,
-  IconGlobe,
-  IconLock,
-  IconMail,
   IconServer,
   IconSettings,
   IconShield,
@@ -45,11 +40,6 @@ const allNavItems: Array<{
   { to: '/monitoring', name: 'monitoring', label: 'Monitoring', icon: IconChart, permission: Permission.MONITORING_READ },
   { to: '/applications', name: 'applications', label: 'Applications', icon: IconApp, permission: Permission.APPS_READ },
   { to: '/operations', name: 'operations', label: 'Operations', icon: IconDeploy, permission: Permission.SYSTEM_READ },
-  { to: '/domains', name: 'domains', label: 'Domains', icon: IconGlobe, permission: Permission.DOMAINS_READ },
-  { to: '/databases', name: 'databases', label: 'Databases', icon: IconDatabase, permission: Permission.DATABASES_READ },
-  { to: '/ssl', name: 'ssl', label: 'SSL', icon: IconLock, permission: Permission.SSL_READ },
-  { to: '/admin/mail', name: 'mail-admin', label: 'Mail', icon: IconMail, permission: Permission.MAIL_READ },
-  { to: '/files', name: 'files', label: 'Files', icon: IconFolder, permission: Permission.FILES_READ },
   { to: '/terminal', name: 'terminal', label: 'Terminal', icon: IconTerminal, permission: Permission.TERMINAL_EXECUTE },
   { to: '/security', name: 'security', label: 'Security', icon: IconShield, permission: Permission.SYSTEM_ADMIN },
   { to: '/servers', name: 'servers', label: 'Servers', icon: IconServer, permission: Permission.SERVERS_READ },
@@ -83,7 +73,7 @@ const activeName = computed(() => route.name)
           v-if="!collapsed"
           class="truncate text-sm font-semibold tracking-tight text-slate-900 dark:text-white"
         >
-          IFNOTUS
+          Podium
         </span>
       </RouterLink>
     </div>

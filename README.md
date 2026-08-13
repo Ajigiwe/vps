@@ -1,11 +1,11 @@
-# IFNOTUS — Infrastructure and Operations Platform
+# Podium — Infrastructure and Operations Platform
 
 A production-grade platform combining infrastructure monitoring, server management, deployment automation, application management, and email administration.
 
 ## Architecture Overview
 
 ```
-ifnotUs/
+Podium/
 ├── backend/                    # Python 3.13+ / FastAPI
 │   ├── app/
 │   │   ├── api/                # Dependency injection, API assembly

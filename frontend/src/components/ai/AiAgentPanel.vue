@@ -36,7 +36,7 @@ const SESSION_KEY = computed(() => {
   const scope = (props.path || props.appId || props.rootId || props.cwd || 'default')
     .replace(/[^a-zA-Z0-9._/-]+/g, '_')
     .slice(0, 160)
-  return `ifnotus.ai.session.${props.surface}.${scope}`
+  return `Podium.ai.session.${props.surface}.${scope}`
 })
 
 const bootLoading = ref(true)

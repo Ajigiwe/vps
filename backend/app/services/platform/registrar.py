@@ -31,7 +31,7 @@ class DomainRegistrar:
         tld = extension.lower().lstrip(".")
         domain = f"{sld}.{tld}"
         price = DOMAIN_PRICES.get(f".{tld}", Decimal("0"))
-        reserved = {"ifnotus", "www", "mail", "ftp", "admin", "api", "csdttu", "examflow"}
+        reserved = {"Podium", "www", "mail", "ftp", "admin", "api", "csdttu", "examflow"}
         if sld in reserved or len(sld) < 3:
             return {
                 "domain": domain,

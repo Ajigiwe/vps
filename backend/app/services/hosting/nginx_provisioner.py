@@ -11,7 +11,7 @@ from app.schemas.operations import OperationResult
 from app.services.hosting.nginx_sites import NginxSiteManager
 from app.services.monitoring.subprocess_util import resolve_binary, run_command
 
-MANAGED_MARKER = "# managed-by-ifnotus: domain-vhost"
+MANAGED_MARKER = "# managed-by-Podium: domain-vhost"
 
 
 class DomainNginxProvisioner:
@@ -40,7 +40,7 @@ class DomainNginxProvisioner:
             index.write_text(
                 "<!DOCTYPE html><html><head><meta charset='utf-8'>"
                 f"<title>{root.name}</title></head><body>"
-                "<h1>It works</h1><p>Provisioned by IFNOTUS.</p></body></html>\n",
+                "<h1>It works</h1><p>Provisioned by Podium.</p></body></html>\n",
                 encoding="utf-8",
             )
         return root
@@ -139,7 +139,7 @@ class DomainNginxProvisioner:
         php_sock = str(sock) if sock.exists() else "/run/php/php8.3-fpm.sock"
         root = str(public)
         return [
-            "    # Roundcube webmail (IFNOTUS) — https://{domain}/mail/",
+            "    # Roundcube webmail (Podium) — https://{domain}/mail/",
             "    location = /mail {",
             "        return 302 /mail/;",
             "    }",
@@ -239,7 +239,7 @@ class DomainNginxProvisioner:
 
     def inject_webmail_into_config(self, conf: str) -> str:
         """Insert Roundcube /mail locations before catch-all `location /` (never inside if{})."""
-        if "location = /mail" in conf or "Roundcube webmail (IFNOTUS)" in conf:
+        if "location = /mail" in conf or "Roundcube webmail (Podium)" in conf:
             return conf
         block_lines = self._webmail_locations()
         if not block_lines or "skipped" in (block_lines[0] if block_lines else ""):
@@ -293,7 +293,7 @@ class DomainNginxProvisioner:
             if updated == text:
                 skipped.append(name)
                 continue
-            bak = path.with_name(f"{name}.bak-ifnotus-mail")
+            bak = path.with_name(f"{name}.bak-Podium-mail")
             try:
                 if not bak.exists():
                     bak.write_text(text, encoding="utf-8")
@@ -316,7 +316,7 @@ class DomainNginxProvisioner:
         if not reload.success:
             # Reload failed — try to revert changed files from bak
             for name in changed:
-                bak = self._available / f"{name}.bak-ifnotus-mail"
+                bak = self._available / f"{name}.bak-Podium-mail"
                 site = self._available / name
                 if bak.exists():
                     try:
@@ -451,7 +451,7 @@ class DomainNginxProvisioner:
             if enabled_path.exists() or enabled_path.is_symlink():
                 enabled_path.unlink()
             if remove_files and available.exists():
-                # Only remove if IFNOTUS-managed
+                # Only remove if Podium-managed
                 head = available.read_text(encoding="utf-8", errors="replace")[:200]
                 if MANAGED_MARKER in head:
                     available.unlink()

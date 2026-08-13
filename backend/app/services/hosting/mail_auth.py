@@ -34,7 +34,7 @@ from app.repositories.domain import DomainRepository
 logger = get_logger(__name__)
 
 SELECTOR = "mail"
-MAIL_HOSTNAME = "mail.ifnotus.space"
+MAIL_HOSTNAME = "mail.Podium.space"
 OPENDKIM_KEYS = Path("/etc/opendkim/keys")
 KEY_TABLE = Path("/etc/opendkim/key.table")
 SIGNING_TABLE = Path("/etc/opendkim/signing.table")
@@ -170,8 +170,8 @@ class MailAuthService:
         result = await self._session.execute(stmt)
         names = sorted({row[0].lower() for row in result.all()})
         # Always cover the system mail hostname apex.
-        if "ifnotus.space" not in names:
-            names.append("ifnotus.space")
+        if "Podium.space" not in names:
+            names.append("Podium.space")
         return names
 
     def _ensure_dkim_key(self, domain: str) -> str | None:
@@ -252,7 +252,7 @@ class MailAuthService:
             "::1",
             "localhost",
             MAIL_HOSTNAME,
-            "ifnotus.space",
+            "Podium.space",
         }
         if OPENDKIM_KEYS.exists():
             for key_dir in OPENDKIM_KEYS.iterdir():
@@ -298,9 +298,9 @@ class MailAuthService:
                 return
             raw = domains_cf.read_text(encoding="utf-8", errors="replace")
             hosts = _cf_value(raw, "hosts") or "127.0.0.1:5432"
-            user = _cf_value(raw, "user") or "ifnotus"
+            user = _cf_value(raw, "user") or "Podium"
             password = _cf_value(raw, "password") or ""
-            dbname = _cf_value(raw, "dbname") or "ifnotus"
+            dbname = _cf_value(raw, "dbname") or "Podium"
             content = (
                 f"hosts = {hosts}\n"
                 f"user = {user}\n"

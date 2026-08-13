@@ -62,7 +62,7 @@ class ResourceManager:
                     best_free = free_score
         if best is None:
             raise RuntimeError(
-                "Insufficient capacity for this plan. Contact IFNOTUS support or choose a smaller plan."
+                "Insufficient capacity for this plan. Contact Podium support or choose a smaller plan."
             )
         return best
 

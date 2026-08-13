@@ -50,10 +50,10 @@ class DatabaseManagerService:
 
     def __init__(self, settings: Settings) -> None:
         self._settings = settings
-        self._registry_path = Path(getattr(settings, "databases_registry_path", ".ifnotus/databases/registry.json")).resolve()
+        self._registry_path = Path(getattr(settings, "databases_registry_path", ".podium/databases/registry.json")).resolve()
         self._sqlite_root = Path(getattr(settings, "databases_sqlite_root", str(DEFAULT_SQLITE_ROOT))).resolve()
         self._backup_root = Path(
-            getattr(settings, "databases_backup_root", ".ifnotus/databases/backups")
+            getattr(settings, "databases_backup_root", ".podium/databases/backups")
         ).resolve()
         self._backup_index = self._backup_root / "index.json"
 
@@ -737,10 +737,10 @@ class DatabaseManagerService:
         path.parent.mkdir(parents=True, exist_ok=True)
         conn = sqlite3.connect(str(path))
         try:
-            conn.execute("CREATE TABLE IF NOT EXISTS _ifnotus_meta (k TEXT PRIMARY KEY, v TEXT)")
+            conn.execute("CREATE TABLE IF NOT EXISTS _Podium_meta (k TEXT PRIMARY KEY, v TEXT)")
             conn.execute(
-                "INSERT OR REPLACE INTO _ifnotus_meta(k,v) VALUES (?,?)",
-                ("created_by", "ifnotus"),
+                "INSERT OR REPLACE INTO _Podium_meta(k,v) VALUES (?,?)",
+                ("created_by", "Podium"),
             )
             conn.commit()
         finally:
@@ -839,7 +839,7 @@ class DatabaseManagerService:
         # Touch DB by inserting a meta doc, then remove if user asked empty — keep meta
         js_create = (
             f"db.getSiblingDB('{self._js_escape(name)}')"
-            f".getCollection('_ifnotus_meta').insertOne({{created_by:'ifnotus', at:new Date()}})"
+            f".getCollection('_Podium_meta').insertOne({{created_by:'Podium', at:new Date()}})"
         )
         code, _, err = self._mongo_eval(js_create)
         if code != 0:
@@ -1087,28 +1087,28 @@ class DatabaseManagerService:
         # Prefer docker if present (no apt repo fights)
         if shutil.which("docker"):
             # Remove stale container then run
-            self._run(["docker", "rm", "-f", "ifnotus-mongo"])
+            self._run(["docker", "rm", "-f", "Podium-mongo"])
             code, out, err = self._run(
                 [
                     "docker",
                     "run",
                     "-d",
                     "--name",
-                    "ifnotus-mongo",
+                    "Podium-mongo",
                     "--restart",
                     "unless-stopped",
                     "-p",
                     "127.0.0.1:27017:27017",
                     "-v",
-                    "ifnotus_mongo_data:/data/db",
+                    "Podium_mongo_data:/data/db",
                     "mongo:7",
                 ]
             )
             if code == 0:
                 return OperationResult(
                     success=True,
-                    message="MongoDB started via Docker (ifnotus-mongo on 127.0.0.1:27017).",
-                    details={"container": "ifnotus-mongo", "stdout": out},
+                    message="MongoDB started via Docker (Podium-mongo on 127.0.0.1:27017).",
+                    details={"container": "Podium-mongo", "stdout": out},
                 )
             return OperationResult(success=False, message=f"Docker Mongo start failed: {err or out}")
 
@@ -1170,9 +1170,9 @@ class DatabaseManagerService:
             return self._run(["mongo", "--quiet", "--eval", js])
         # docker exec fallback
         if shutil.which("docker"):
-            code, _, _ = self._run(["docker", "inspect", "ifnotus-mongo"])
+            code, _, _ = self._run(["docker", "inspect", "Podium-mongo"])
             if code == 0:
-                return self._run(["docker", "exec", "ifnotus-mongo", "mongosh", "--quiet", "--eval", js])
+                return self._run(["docker", "exec", "Podium-mongo", "mongosh", "--quiet", "--eval", js])
         return 1, "", "mongosh/mongo not available"
 
     @staticmethod

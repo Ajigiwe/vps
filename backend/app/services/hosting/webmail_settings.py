@@ -67,7 +67,7 @@ class WebmailSettingsStore:
 
     def get_product_name(self) -> str:
         raw = self._read_raw()
-        return str(raw.get("product_name") or "IFNOTUS Webmail").strip() or "IFNOTUS Webmail"
+        return str(raw.get("product_name") or "Podium Webmail").strip() or "Podium Webmail"
 
     def status(self) -> WebmailSettingsResponse:
         raw = self._read_raw()
@@ -120,9 +120,9 @@ class WebmailSettingsStore:
 
         logo_block = (
             "$config['skin_logo'] = [\n"
-            "  'elastic:*' => 'images/ifnotus-webmail-logo.png',\n"
-            "  '[favicon]' => 'images/ifnotus-webmail-favicon.ico',\n"
-            "  'elastic:[favicon]' => 'images/ifnotus-webmail-favicon.ico',\n"
+            "  'elastic:*' => 'images/Podium-webmail-logo.png',\n"
+            "  '[favicon]' => 'images/Podium-webmail-favicon.ico',\n"
+            "  'elastic:[favicon]' => 'images/Podium-webmail-favicon.ico',\n"
             "];"
         )
 
@@ -163,16 +163,16 @@ class WebmailSettingsStore:
         cookie name every domain shares `roundcube_sessid`, so an open session
         on one domain can surface while browsing another domain's /mail.
         """
-        begin = "// >>> IFNOTUS host isolation (managed) >>>"
-        end = "// <<< IFNOTUS host isolation (managed) <<<"
+        begin = "// >>> Podium host isolation (managed) >>>"
+        end = "// <<< Podium host isolation (managed) <<<"
         block = "\n".join(
             [
                 begin,
-                "$ifnotus_webmail_host = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));",
-                "$ifnotus_webmail_host = preg_replace('/:\\d+$/', '', $ifnotus_webmail_host);",
-                "$ifnotus_webmail_host = preg_replace('/[^a-z0-9.\\-]/', '', $ifnotus_webmail_host);",
-                "if ($ifnotus_webmail_host === '') { $ifnotus_webmail_host = 'default'; }",
-                "$config['session_name'] = 'ifnotus_webmail_' . substr(sha1($ifnotus_webmail_host), 0, 16);",
+                "$Podium_webmail_host = strtolower((string) ($_SERVER['HTTP_HOST'] ?? ''));",
+                "$Podium_webmail_host = preg_replace('/:\\d+$/', '', $Podium_webmail_host);",
+                "$Podium_webmail_host = preg_replace('/[^a-z0-9.\\-]/', '', $Podium_webmail_host);",
+                "if ($Podium_webmail_host === '') { $Podium_webmail_host = 'default'; }",
+                "$config['session_name'] = 'Podium_webmail_' . substr(sha1($Podium_webmail_host), 0, 16);",
                 "$config['session_path'] = '/mail/';",
                 "$config['session_domain'] = '';",
                 "$config['session_samesite'] = 'Lax';",
@@ -203,15 +203,15 @@ class WebmailSettingsStore:
 
         mapping = {
             "logo.png": [
-                images / "ifnotus-webmail-logo.png",
+                images / "Podium-webmail-logo.png",
                 elastic / "logo.png",
             ],
-            "logo-192.png": [images / "ifnotus-webmail-logo-192.png"],
+            "logo-192.png": [images / "Podium-webmail-logo-192.png"],
             "favicon.ico": [
-                images / "ifnotus-webmail-favicon.ico",
+                images / "Podium-webmail-favicon.ico",
                 elastic / "favicon.ico",
             ],
-            "favicon-32.png": [images / "ifnotus-webmail-favicon-32.png"],
+            "favicon-32.png": [images / "Podium-webmail-favicon-32.png"],
         }
 
         # Prefer packaged assets next to deploy; fall back to repo assets path.
@@ -219,7 +219,7 @@ class WebmailSettingsStore:
         if self._brand_src.is_dir():
             sources.append(self._brand_src)
         for extra in (
-            Path("/srv/apps/ifnotus/assets/webmail"),
+            Path("/srv/apps/podium/assets/webmail"),
             Path(__file__).resolve().parents[3] / "assets" / "webmail",
         ):
             if extra.is_dir() and extra not in sources:
@@ -246,7 +246,7 @@ class WebmailSettingsStore:
         png_logo = elastic / "logo.png"
         if png_logo.is_file() and svg_logo.is_file():
             # Keep a backup once; elastic may still reference svg via template default.
-            bak = elastic / "logo.svg.bak-ifnotus"
+            bak = elastic / "logo.svg.bak-Podium"
             try:
                 if not bak.exists():
                     shutil.copy2(svg_logo, bak)

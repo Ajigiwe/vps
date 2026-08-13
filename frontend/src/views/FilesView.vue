@@ -19,9 +19,9 @@ type SortKey = 'name' | 'size' | 'modified' | 'type'
 type SortDir = 'asc' | 'desc'
 type LookStyle = 'default' | 'windows' | 'unix' | 'compact'
 
-const VIEW_KEY = 'ifnotus.files.view'
-const SORT_KEY = 'ifnotus.files.sort'
-const LOOK_KEY = 'ifnotus.files.look'
+const VIEW_KEY = 'Podium.files.view'
+const SORT_KEY = 'Podium.files.sort'
+const LOOK_KEY = 'Podium.files.look'
 
 const route = useRoute()
 const router = useRouter()
@@ -331,7 +331,7 @@ async function openFile(entry: FileEntry) {
       root: selectedRoot.value,
     },
   }).href
-  const win = window.open(href, `ifnotus-editor-${entry.path}`)
+  const win = window.open(href, `Podium-editor-${entry.path}`)
   if (!win) {
     message.value = {
       type: 'err',

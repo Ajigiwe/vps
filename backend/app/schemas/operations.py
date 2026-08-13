@@ -33,8 +33,8 @@ class EnvironmentResponse(SchemaBase):
 
 class SmtpTestRequest(SchemaBase):
     to_email: str
-    subject: str = "IFNOTUS SMTP Test"
-    body: str = "This is a test message from IFNOTUS."
+    subject: str = "Podium SMTP Test"
+    body: str = "This is a test message from Podium."
 
 
 class FileEntry(SchemaBase):

@@ -1,4 +1,4 @@
-"""IFNOTUS product layer — customers, plans, orders, environments.
+"""Podium product layer — customers, plans, orders, environments.
 
 Sits beside the existing operator hosting models. Staff users stay on
 ``users``; paying customers get a ``customers`` profile linked to a user.
@@ -29,7 +29,7 @@ from app.models.base import TimestampMixin, UUIDPrimaryKeyMixin
 
 
 class Customer(Base, UUIDPrimaryKeyMixin, TimestampMixin):
-    """Paying IFNOTUS customer (1:1 with a ``users`` row)."""
+    """Paying Podium customer (1:1 with a ``users`` row)."""
 
     __tablename__ = "customers"
 
@@ -141,7 +141,7 @@ class InfrastructureNode(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
 
 class CustomerEnvironment(Base, UUIDPrimaryKeyMixin, TimestampMixin):
-    """Provisioned customer space on a node. Wraps existing IFNOTUS hosting."""
+    """Provisioned customer space on a node. Wraps existing Podium hosting."""
 
     __tablename__ = "customer_environments"
 
@@ -196,7 +196,7 @@ class CustomerDomain(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
 
 class AiCreditAccount(Base, UUIDPrimaryKeyMixin, TimestampMixin):
-    """Per-customer IFNOTUS AI Engineer wallet."""
+    """Per-customer Podium AI Engineer wallet."""
 
     __tablename__ = "ai_credit_accounts"
 

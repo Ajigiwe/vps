@@ -56,7 +56,7 @@ class MailService:
         mailboxes = await self._mailboxes.list_for_domain(domain_id)
         aliases = await self._aliases.list_for_domain(domain_id)
         webmail = f"https://{domain.name}/mail/"
-        if self._settings.webmail_url and domain.name in {"ifnotus.space", "www.ifnotus.space"}:
+        if self._settings.webmail_url and domain.name in {"Podium.space", "www.Podium.space"}:
             webmail = self._settings.webmail_url.rstrip("/") + "/"
         return MailDomainResponse(
             timestamp=datetime.now(UTC),

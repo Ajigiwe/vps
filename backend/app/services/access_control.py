@@ -297,7 +297,7 @@ class AccessControlService:
             return
 
         candidates = [
-            Path("/srv/apps/ifnotus/backend/.env"),
+            Path("/srv/apps/podium/backend/.env"),
             Path(".env"),
             Path("../.env"),
         ]

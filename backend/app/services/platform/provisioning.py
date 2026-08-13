@@ -1,4 +1,4 @@
-"""Provisioning engine — create customer environment using IFNOTUS hosting tools."""
+"""Provisioning engine — create customer environment using Podium hosting tools."""
 
 from __future__ import annotations
 
@@ -54,7 +54,7 @@ class ProvisioningEngine:
             raise RuntimeError("Order/subscription/plan missing for provision job.")
 
         node = await self._resources.pick_node_for_plan(plan)
-        hostname = (domain_name or f"env-{str(order.id)[:8]}.customers.ifnotus.space").lower()
+        hostname = (domain_name or f"env-{str(order.id)[:8]}.customers.Podium.space").lower()
         doc_root = str(Path(self._settings.customer_environments_root) / str(order.customer_id) / hostname)
         self._nginx.ensure_document_root(doc_root)
 
@@ -81,7 +81,7 @@ class ProvisioningEngine:
             enabled=True,
             nginx_enabled=True,
             force_https=False,
-            notes=f"IFNOTUS customer environment for order {order.id}",
+            notes=f"Podium customer environment for order {order.id}",
         )
         self._session.add(domain)
         await self._session.flush()
@@ -137,7 +137,7 @@ class ProvisioningEngine:
             Notification(
                 customer_id=order.customer_id,
                 title="Hosting is ready",
-                body=f"Your IFNOTUS environment is live at {hostname}.",
+                body=f"Your Podium environment is live at {hostname}.",
                 kind="provision",
                 channel="panel",
             )

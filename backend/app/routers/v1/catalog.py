@@ -1,4 +1,4 @@
-"""Public IFNOTUS catalog — plans and domain TLD prices."""
+"""Public Podium catalog — plans and domain TLD prices."""
 
 from fastapi import APIRouter
 from sqlalchemy import select

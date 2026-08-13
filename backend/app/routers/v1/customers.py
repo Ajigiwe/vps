@@ -1,4 +1,4 @@
-"""IFNOTUS customer portal + product APIs."""
+"""Podium customer portal + product APIs."""
 
 from __future__ import annotations
 
@@ -92,7 +92,7 @@ async def customer_login(
         refresh_token=pair.refresh_token,
         token_type=pair.token_type,
         expires_in=pair.expires_in,
-        message=f"Welcome to IFNOTUS, {customer.full_name}.",
+        message=f"Welcome to Podium, {customer.full_name}.",
     )
 
 
@@ -350,7 +350,7 @@ async def start_ai_operation(
             customer.id,
             op.id,
             success=True,
-            result="Accepted. Use IFNOTUS AI chat for live troubleshooting within your environment.",
+            result="Accepted. Use Podium AI chat for live troubleshooting within your environment.",
         )
     return AiOperationResponse.model_validate(op)
 
@@ -369,7 +369,7 @@ async def confirm_ai_operation(
         customer.id,
         op.id,
         success=True,
-        result="Confirmed and recorded. Apply the change via IFNOTUS AI propose/apply tools.",
+        result="Confirmed and recorded. Apply the change via Podium AI propose/apply tools.",
     )
     return AiOperationResponse.model_validate(op)
 

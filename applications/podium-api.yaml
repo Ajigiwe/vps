@@ -1,9 +1,9 @@
-id: ifnotus-api
-name: IFNOTUS API
+id: podium-api
+name: Podium API
 type: fastapi
 environment: development
 enabled: true
-description: IFNOTUS control plane backend API
+description: Podium control plane backend API
 version: "0.1.0"
 tags:
   - platform

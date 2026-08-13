@@ -20,7 +20,7 @@ function canvasSignal(): string {
     ctx.fillStyle = '#0f172a'
     ctx.fillRect(0, 0, 120, 40)
     ctx.fillStyle = '#10b981'
-    ctx.fillText('IFNOTUS', 4, 10)
+    ctx.fillText('Podium', 4, 10)
     return canvas.toDataURL().slice(-64)
   } catch {
     return 'canvas-blocked'

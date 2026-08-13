@@ -14,8 +14,8 @@ from app.core.logging import get_logger
 
 logger = get_logger(__name__)
 
-DEFAULT_PATH = Path("/srv/apps/ifnotus/backend/.ifnotus/state/login-challenges.json")
-FALLBACK_PATH = Path(".ifnotus/state/login-challenges.json")
+DEFAULT_PATH = Path("/srv/apps/podium/backend/.podium/state/login-challenges.json")
+FALLBACK_PATH = Path(".podium/state/login-challenges.json")
 CHALLENGE_TTL_MINUTES = 15
 CODE_LENGTH = 6
 _lock = Lock()
@@ -42,7 +42,7 @@ class LoginChallenge:
 
 
 def _path() -> Path:
-    if DEFAULT_PATH.parent.exists() or Path("/srv/apps/ifnotus/backend").exists():
+    if DEFAULT_PATH.parent.exists() or Path("/srv/apps/podium/backend").exists():
         DEFAULT_PATH.parent.mkdir(parents=True, exist_ok=True)
         return DEFAULT_PATH
     FALLBACK_PATH.parent.mkdir(parents=True, exist_ok=True)

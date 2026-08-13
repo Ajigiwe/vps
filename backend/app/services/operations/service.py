@@ -109,7 +109,7 @@ class OperationsService:
 
         msg = EmailMessage()
         msg["Subject"] = subject
-        msg["From"] = self._settings.smtp_from or self._settings.smtp_username or "noreply@ifnotus.local"
+        msg["From"] = self._settings.smtp_from or self._settings.smtp_username or "noreply@Podium.local"
         msg["To"] = to_email
         msg.set_content(body)
 
@@ -204,7 +204,7 @@ class OperationsService:
                 )
 
         for app in self._apps.list_all():
-            app_backup = Path(app.root_path) / ".ifnotus" / "backups"
+            app_backup = Path(app.root_path) / ".Podium" / "backups"
             if app_backup.exists():
                 for path in sorted(app_backup.glob("*"), reverse=True):
                     if path.is_file():
@@ -297,7 +297,7 @@ class OperationsService:
         entries: list[FileEntry] = []
         if target.is_dir():
             for child in sorted(target.iterdir(), key=lambda p: (not p.is_dir(), p.name.lower())):
-                if child.name.startswith(".") and child.name not in {".ifnotus"}:
+                if child.name.startswith(".") and child.name not in {".Podium"}:
                     continue
                 stat = child.stat()
                 rel = str(child.relative_to(base))

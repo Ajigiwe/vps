@@ -19,7 +19,7 @@ SENSITIVE_KEY = re.compile(
 
 
 class AiMemoryStore:
-    """File-backed memory + undo journal under `.ifnotus/ai/`."""
+    """File-backed memory + undo journal under `.podium/ai/`."""
 
     def __init__(self, settings: Settings) -> None:
         self._root = Path(settings.ai_memory_path).resolve()

@@ -17,7 +17,7 @@ from app.repositories.user import UserRepository
 async def seed_admin(
     *,
     username: str = "admin",
-    email: str = "admin@ifnotus.local",
+    email: str = "admin@podium.local",
     password: str = "admin123",
     full_name: str = "System Administrator",
 ) -> None:

@@ -1,4 +1,4 @@
-"""IFNOTUS product-layer services package."""
+"""Podium product-layer services package."""
 
 from app.services.platform.billing import SubscriptionBillingService
 from app.services.platform.customers import CustomerService

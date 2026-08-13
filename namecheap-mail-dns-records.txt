@@ -12,7 +12,7 @@ IMPORTANT
 - Paste every DKIM value as one line.
 
 ===============================================================================
-DOMAIN: ifnotus.space
+DOMAIN: Podium.space
 ===============================================================================
 
 HOST RECORDS
@@ -24,7 +24,7 @@ TTL: Automatic
 
 Type: TXT Record
 Host: @
-Value: v=spf1 ip4:80.241.223.82 a:mail.ifnotus.space ~all
+Value: v=spf1 ip4:80.241.223.82 a:mail.Podium.space ~all
 TTL: Automatic
 
 Type: TXT Record
@@ -34,14 +34,14 @@ TTL: Automatic
 
 Type: TXT Record
 Host: _dmarc
-Value: v=DMARC1; p=none; rua=mailto:postmaster@ifnotus.space
+Value: v=DMARC1; p=none; rua=mailto:postmaster@Podium.space
 TTL: Automatic
 
 MAIL SETTINGS > CUSTOM MX
 
 Type: MX Record
 Host: @
-Value: mail.ifnotus.space.
+Value: mail.Podium.space.
 Priority: 10
 TTL: Automatic
 

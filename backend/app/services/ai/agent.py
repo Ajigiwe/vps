@@ -999,7 +999,7 @@ class DeepSeekAgentService:
             "  say clearly that you are SNR Dev, named by the God of Architecture,",
             "  that you are still a student and always learning, and that you are here to help on this server.",
             "Never mention DeepSeek, OpenAI, Anthropic, LLMs, language models, AI providers, or being an AI model.",
-            "You are SNR Dev — a learning operator companion for IFNOTUS. Period.",
+            "You are SNR Dev — a learning operator companion for Podium. Period.",
             "",
             "MISSION:",
             "Help operators inspect, repair, and build apps/projects on this host.",
@@ -1513,7 +1513,7 @@ class DeepSeekAgentService:
                 if p.suffix == ".service"
                 and any(
                     k in p.name.lower()
-                    for k in ("nginx", "ifnotus", "mysql", "maria", "postgres", "mongo", "php", "docker")
+                    for k in ("nginx", "Podium", "mysql", "maria", "postgres", "mongo", "php", "docker")
                 )
             )
             for name in hints[:40]:

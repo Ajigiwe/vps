@@ -66,7 +66,7 @@ async def verify_device(
     request: Request,
     auth_service: AuthService = Depends(get_auth_service),
 ) -> LoginResponse:
-    """Complete login after entering the one-time code from `ifnotus-unlock pending`."""
+    """Complete login after entering the one-time code from `podium-unlock pending`."""
     ctx = _access_context(request, body.device_fingerprint)
     return await auth_service.verify_device(body, ctx)
 

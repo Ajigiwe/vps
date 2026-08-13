@@ -13,7 +13,7 @@ import type { DatabaseEngine, DbQueryResult, DbSchema, DbTable } from '@/types/d
 
 type StudioColorMode = 'light' | 'dark'
 
-const UNLOCK_KEY = 'ifnotus.databases.unlocked_at'
+const UNLOCK_KEY = 'Podium.databases.unlocked_at'
 const UNLOCK_TTL_MS = 30 * 60 * 1000
 
 const route = useRoute()
@@ -50,8 +50,8 @@ const editMode = ref<'edit' | 'insert'>('edit')
 const lastSyncedAt = ref<Date | null>(null)
 const schemaRefreshing = ref(false)
 const resultMode = ref<'table' | 'query'>('table')
-const THEME_KEY = 'ifnotus.studio.theme'
-const SCHEMA_WIDTH_KEY = 'ifnotus.studio.schema_width'
+const THEME_KEY = 'Podium.studio.theme'
+const SCHEMA_WIDTH_KEY = 'Podium.studio.schema_width'
 const storedTheme = localStorage.getItem(THEME_KEY) as StudioColorMode | null
 const colorMode = ref<StudioColorMode>(storedTheme || (theme.isDark ? 'dark' : 'light'))
 const schemaWidth = ref(clampSchemaWidth(Number(localStorage.getItem(SCHEMA_WIDTH_KEY) || 240)))

@@ -751,9 +751,9 @@ class DatabaseStudioService:
         if Path("/usr/bin/mongosh").exists() or subprocess.getoutput("which mongosh"):
             return self._run(["mongosh", "--quiet", "--eval", js])
         # docker fallback used by DatabaseManagerService
-        code, _, _ = self._run(["docker", "inspect", "ifnotus-mongo"])
+        code, _, _ = self._run(["docker", "inspect", "Podium-mongo"])
         if code == 0:
-            return self._run(["docker", "exec", "ifnotus-mongo", "mongosh", "--quiet", "--eval", js])
+            return self._run(["docker", "exec", "Podium-mongo", "mongosh", "--quiet", "--eval", js])
         return 1, "", "mongosh not available — Ensure MongoDB from Databases page first."
 
     @staticmethod

@@ -94,8 +94,8 @@ KNOWN_SERVICES: dict[str, tuple[ServiceCategory, bool]] = {
     "mysqld": (ServiceCategory.DATABASE, True),
     "mariadb": (ServiceCategory.DATABASE, True),
     "postgresql": (ServiceCategory.DATABASE, True),
-    "ifnotus-api": (ServiceCategory.APPLICATION, True),
-    "ifnotus-worker": (ServiceCategory.QUEUE, True),
+    "podium-api": (ServiceCategory.APPLICATION, True),
+    "podium-worker": (ServiceCategory.QUEUE, True),
     "supervisor": (ServiceCategory.APPLICATION, True),
 }
 
@@ -292,7 +292,7 @@ class ServiceClassifier:
                     "display_name": binding.app_name,
                     "category": category,
                     "relevant": True,
-                    "managed_by_ifnotus": binding.managed,
+                    "managed_by_podium": binding.managed,
                     "app_id": binding.app_id,
                     "ports": self._infer_ports(unit, svc.source),
                     "description": svc.description or f"Linked application: {binding.app_name}",

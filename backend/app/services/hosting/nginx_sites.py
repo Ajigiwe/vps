@@ -11,7 +11,7 @@ from app.schemas.operations import OperationResult
 from app.services.applications.config import ApplicationDefinition
 from app.services.monitoring.subprocess_util import resolve_binary, run_command
 
-STUB_MARKER = "# managed-by-ifnotus: disabled-stub"
+STUB_MARKER = "# managed-by-Podium: disabled-stub"
 
 
 class NginxSiteManager:
@@ -120,7 +120,7 @@ class NginxSiteManager:
         enabled_path.write_text(stub, encoding="utf-8")
 
     def _offline_page_dir(self, site_name: str) -> Path:
-        return Path("/var/lib/ifnotus/disabled-pages") / site_name
+        return Path("/var/lib/Podium/disabled-pages") / site_name
 
     def _build_disabled_stub(self, available_path: Path) -> str:
         content = available_path.read_text(encoding="utf-8", errors="replace")
@@ -137,7 +137,7 @@ class NginxSiteManager:
         page_dir.mkdir(parents=True, exist_ok=True)
         (page_dir / "index.html").write_text(self._disabled_html(primary), encoding="utf-8")
 
-        blocks: list[str] = [STUB_MARKER, "# Application temporarily disabled by IFNOTUS.", ""]
+        blocks: list[str] = [STUB_MARKER, "# Application temporarily disabled by Podium.", ""]
 
         def append_server(listen_lines: list[str], *, ssl: bool) -> None:
             blocks.append("server {")

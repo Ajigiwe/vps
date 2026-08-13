@@ -180,7 +180,7 @@ onMounted(load)
         <div>
           <h1 class="text-lg font-semibold text-slate-900 dark:text-white">SSL Certificates</h1>
           <p class="text-sm text-surface-muted">
-            IFNOTUS-managed and VPS-discovered certificates
+            Podium-managed and VPS-discovered certificates
             <span v-if="discoveredTotal"> · {{ discoveredTotal }} discovered</span>
           </p>
         </div>

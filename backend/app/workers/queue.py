@@ -16,7 +16,7 @@ logger = get_logger(__name__)
 class TaskQueue:
     """Push/pop task messages via Redis lists."""
 
-    def __init__(self, redis: Redis, queue_name: str = "ifnotus:tasks") -> None:
+    def __init__(self, redis: Redis, queue_name: str = "podium:tasks") -> None:
         self._redis = redis
         self._queue_name = queue_name
 

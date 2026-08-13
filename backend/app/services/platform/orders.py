@@ -192,7 +192,7 @@ class OrderService:
             Notification(
                 customer_id=order.customer_id,
                 title="Payment confirmed",
-                body="Your IFNOTUS payment was verified. Provisioning has started.",
+                body="Your Podium payment was verified. Provisioning has started.",
                 kind="payment",
                 channel="panel",
             )

@@ -15,7 +15,7 @@ from pathlib import Path
 
 SSH_ATTEMPTS = "security.ssh_attempts"
 
-_DEFAULT_PATH = ".ifnotus/state/log-clears.json"
+_DEFAULT_PATH = ".podium/state/log-clears.json"
 
 
 def app_journal_key(app_id: str) -> str:

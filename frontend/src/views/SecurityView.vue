@@ -91,7 +91,7 @@ function downloadSecurityLogs() {
   const a = document.createElement('a')
   const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
   a.href = url
-  a.download = `ifnotus-security-logs-${stamp}.json`
+  a.download = `Podium-security-logs-${stamp}.json`
   a.click()
   URL.revokeObjectURL(url)
   logsDownloaded.value = true

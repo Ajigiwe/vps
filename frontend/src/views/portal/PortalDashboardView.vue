@@ -13,7 +13,7 @@ const orderMsg = ref('')
 const domainLocal = ref('')
 const domainExt = ref('.online')
 const domainStatus = ref('')
-const selectedPlanId = ref(localStorage.getItem('ifnotus_selected_plan') || '')
+const selectedPlanId = ref(localStorage.getItem('Podium_selected_plan') || '')
 const billingMsg = ref('')
 const changePlanId = ref('')
 
@@ -37,7 +37,7 @@ onMounted(async () => {
   } catch (e: unknown) {
     const err = e as { response?: { status?: number; data?: { error?: { message?: string } } } }
     if (err.response?.status === 401 || err.response?.status === 403) {
-      localStorage.removeItem('ifnotus_portal')
+      localStorage.removeItem('Podium_portal')
       await router.push({ name: 'portal-login' })
       return
     }
@@ -132,7 +132,7 @@ async function changePlan(id: string) {
 function logout() {
   localStorage.removeItem('access_token')
   localStorage.removeItem('refresh_token')
-  localStorage.removeItem('ifnotus_portal')
+  localStorage.removeItem('Podium_portal')
   router.push({ name: 'portal-login' })
 }
 </script>
@@ -142,7 +142,7 @@ function logout() {
     <header class="border-b border-slate-200 bg-white">
       <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
         <div>
-          <p class="font-semibold">IFNOTUS Panel</p>
+          <p class="font-semibold">Podium Panel</p>
           <p class="text-xs text-slate-500">{{ dash?.customer.email }}</p>
         </div>
         <button type="button" class="text-sm text-slate-600 hover:text-[#ff6c2c]" @click="logout">

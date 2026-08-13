@@ -57,7 +57,7 @@ const webmailSettings = ref<WebmailSettings | null>(null)
 const webmailLoading = ref(false)
 const webmailSaving = ref(false)
 const webmailWhatsapp = ref('+233541069241')
-const webmailProduct = ref('IFNOTUS Webmail')
+const webmailProduct = ref('Podium Webmail')
 const webmailAutoDetect = ref(true)
 const webmailMessage = ref<{ ok: boolean; text: string } | null>(null)
 const canManageWebmail = computed(() => can(Permission.SYSTEM_ADMIN) || !!auth.user?.is_superuser)
@@ -153,7 +153,7 @@ async function loadWebmailSettings() {
     const { data } = await mailApi.getSettings()
     webmailSettings.value = data
     webmailWhatsapp.value = data.support_whatsapp || '+233541069241'
-    webmailProduct.value = data.product_name || 'IFNOTUS Webmail'
+    webmailProduct.value = data.product_name || 'Podium Webmail'
     webmailAutoDetect.value = data.auto_detect_domains !== false
   } catch (e) {
     webmailMessage.value = { ok: false, text: getApiErrorMessage(e, 'Failed to load webmail settings') }
@@ -168,7 +168,7 @@ async function saveWebmailSettings() {
   try {
     const { data } = await mailApi.updateSettings({
       support_whatsapp: webmailWhatsapp.value.trim(),
-      product_name: webmailProduct.value.trim() || 'IFNOTUS Webmail',
+      product_name: webmailProduct.value.trim() || 'Podium Webmail',
       auto_detect_domains: webmailAutoDetect.value,
     })
     webmailSettings.value = data
@@ -424,7 +424,7 @@ onMounted(refreshAll)
             <input
               v-model="webmailProduct"
               class="mt-1 w-full rounded-lg border border-surface-border bg-transparent px-3 py-2 text-sm"
-              placeholder="IFNOTUS Webmail"
+              placeholder="Podium Webmail"
             />
           </label>
 
@@ -522,7 +522,7 @@ onMounted(refreshAll)
         </button>
       </Card>
 
-      <Card title="Monitored Ports" subtitle="Services IFNOTUS tracks for outages">
+      <Card title="Monitored Ports" subtitle="Services Podium tracks for outages">
         <p class="mb-3 text-sm text-surface-muted">
           Expected:
           <span class="font-mono">{{ ports?.expected_ports?.join(', ') ?? '—' }}</span>

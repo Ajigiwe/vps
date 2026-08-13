@@ -6,7 +6,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision: str = "0008_subscriptions_isolation"
-down_revision: Union[str, None] = "0007_ifnotus_platform"
+down_revision: Union[str, None] = "0007_Podium_platform"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

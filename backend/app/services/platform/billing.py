@@ -74,7 +74,7 @@ class SubscriptionBillingService:
             Notification(
                 customer_id=customer_id,
                 title="Subscription renewed",
-                body=f"Your IFNOTUS hosting is extended until {sub.expires_at.date().isoformat()}.",
+                body=f"Your Podium hosting is extended until {sub.expires_at.date().isoformat()}.",
                 kind="renewal",
             )
         )
@@ -203,7 +203,7 @@ class SubscriptionBillingService:
                 customer_id=sub.customer_id,
                 title=f"Hosting renews {when}",
                 body=(
-                    f"Your IFNOTUS subscription expires {when}. "
+                    f"Your Podium subscription expires {when}. "
                     "Renew from the panel to keep your site online."
                 ),
                 kind=f"renewal_{days_left}",

@@ -1,9 +1,9 @@
-id: ifnotus-frontend
-name: IFNOTUS Frontend
+id: podium-frontend
+name: Podium Frontend
 type: nodejs
 environment: development
 enabled: true
-description: IFNOTUS control plane web UI
+description: Podium control plane web UI
 version: "0.1.0"
 tags:
   - platform

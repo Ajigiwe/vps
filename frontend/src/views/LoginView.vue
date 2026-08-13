@@ -97,7 +97,7 @@ function backToCredentials() {
           i
         </div>
         <div class="leading-tight">
-          <p class="text-sm font-semibold text-slate-800">IFNOTUS</p>
+          <p class="text-sm font-semibold text-slate-800">Podium</p>
           <p class="text-[11px] text-slate-500">Web Host Manager</p>
         </div>
       </div>
@@ -181,7 +181,7 @@ function backToCredentials() {
             <p class="font-medium">Challenge ID: {{ challengeId }}</p>
             <p class="mt-1 text-xs leading-relaxed">
               On the server (SSH), run:
-              <code class="rounded bg-white px-1 py-0.5 text-[11px]">ifnotus-unlock pending</code>
+              <code class="rounded bg-white px-1 py-0.5 text-[11px]">podium-unlock pending</code>
               then type the 6-digit code below.
             </p>
           </div>
@@ -228,7 +228,7 @@ function backToCredentials() {
     </main>
 
     <footer class="border-t border-slate-200 bg-white py-3 text-center text-xs text-slate-400">
-      © {{ new Date().getFullYear() }} IFNOTUS
+      © {{ new Date().getFullYear() }} Podium
     </footer>
   </div>
 </template>

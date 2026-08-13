@@ -231,8 +231,8 @@ export const operationsApi = {
   smtpTest: (toEmail: string) =>
     apiClient.post<OperationResult>('/operations/smtp/test', {
       to_email: toEmail,
-      subject: 'IFNOTUS SMTP Test',
-      body: 'Test message from IFNOTUS operations panel.',
+      subject: 'Podium SMTP Test',
+      body: 'Test message from Podium operations panel.',
     }),
 
   restartNginx: () => apiClient.post<OperationResult>('/operations/nginx/restart'),

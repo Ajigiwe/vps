@@ -202,7 +202,7 @@ async function checkDns(domain: Domain) {
 }
 
 async function removeDomain(domain: Domain) {
-  if (!confirm(`Delete ${domain.name}? This removes the nginx site IFNOTUS created.`)) return
+  if (!confirm(`Delete ${domain.name}? This removes the nginx site Podium created.`)) return
   actionKey.value = `del-${domain.id}`
   try {
     await domainsApi.delete(domain.id)
@@ -538,7 +538,7 @@ onMounted(load)
       <div v-else-if="tab === 'dns'" class="space-y-4">
         <Card padding="md">
           <p class="mb-3 text-xs text-surface-muted">
-            These are the records you should set at your domain registrar. IFNOTUS does not host DNS — it tracks intended records and verifies A-records point here.
+            These are the records you should set at your domain registrar. Podium does not host DNS — it tracks intended records and verifies A-records point here.
           </p>
           <label class="block text-sm">
             <span class="text-surface-muted">Select domain</span>
@@ -602,7 +602,7 @@ onMounted(load)
             class="rounded-lg bg-brand-600 px-3 py-1.5 text-xs text-white"
             @click="importSite(site)"
           >
-            Import to IFNOTUS
+            Import to Podium
           </button>
         </div>
         <p v-if="!discoveredDomains.length" class="text-sm text-surface-muted">No unmanaged nginx hostnames found.</p>

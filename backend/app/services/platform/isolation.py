@@ -42,7 +42,7 @@ class IsolationService:
     ) -> str | None:
         if not self.docker_available:
             return None
-        name = f"ifnotus-env-{env_id[:12]}"
+        name = f"Podium-env-{env_id[:12]}"
         Path(document_root).mkdir(parents=True, exist_ok=True)
         # Replace existing container with same name
         subprocess.run(["docker", "rm", "-f", name], capture_output=True, check=False)
@@ -96,6 +96,6 @@ class IsolationService:
         if container_id:
             names.append(container_id)
         if env_id:
-            names.append(f"ifnotus-env-{env_id[:12]}")
+            names.append(f"Podium-env-{env_id[:12]}")
         for name in names:
             subprocess.run(["docker", "rm", "-f", name], capture_output=True, check=False)

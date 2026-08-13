@@ -222,7 +222,7 @@ class CacheOperationsService:
 
             redis = Redis.from_url(str(self._settings.redis_url), decode_responses=True)
             deleted = 0
-            async for key in redis.scan_iter(match="ifnotus:cache:*", count=200):
+            async for key in redis.scan_iter(match="podium:cache:*", count=200):
                 await redis.delete(key)
                 deleted += 1
             await redis.aclose()

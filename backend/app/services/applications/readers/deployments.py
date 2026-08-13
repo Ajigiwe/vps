@@ -42,7 +42,7 @@ class DeploymentHistoryReader:
     def _resolve_history_dir(self, app: ApplicationDefinition) -> Path:
         if app.deployment.history_dir:
             return Path(app.deployment.history_dir)
-        return app.root_path / ".ifnotus" / "deployments"
+        return app.root_path / ".Podium" / "deployments"
 
     @staticmethod
     def _parse_timestamp(value: object) -> datetime:

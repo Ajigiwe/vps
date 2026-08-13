@@ -20,7 +20,7 @@ import type {
   ManagedDatabase,
 } from '@/types/databases'
 
-const UNLOCK_KEY = 'ifnotus.databases.unlocked_at'
+const UNLOCK_KEY = 'Podium.databases.unlocked_at'
 const UNLOCK_TTL_MS = 30 * 60 * 1000
 
 const loading = ref(true)
@@ -67,7 +67,7 @@ const router = useRouter()
 
 function openManaged(db: ManagedDatabase) {
   const href = router.resolve({ name: 'database-studio', query: { kind: 'managed', id: db.id } }).href
-  window.open(href, `ifnotus-db-${db.id}`)
+  window.open(href, `Podium-db-${db.id}`)
 }
 
 function openLive(row: LiveDatabase) {
@@ -80,7 +80,7 @@ function openLive(row: LiveDatabase) {
       ...(row.path ? { path: row.path } : {}),
     },
   }).href
-  window.open(href, `ifnotus-db-${row.engine}-${row.name}`)
+  window.open(href, `Podium-db-${row.engine}-${row.name}`)
 }
 
 function isManaged(row: LiveDatabase) {
@@ -493,7 +493,7 @@ onBeforeUnmount(() => {
         <div class="db-stat">
           <div class="db-stat-icon is-blue">IF</div>
           <div>
-            <p>Managed by IFNOTUS</p>
+            <p>Managed by Podium</p>
             <strong>{{ managed.length }}</strong>
             <span>Credentials and lifecycle tracked</span>
           </div>
@@ -650,7 +650,7 @@ onBeforeUnmount(() => {
         </div>
       </section>
 
-      <Card title="Managed by IFNOTUS" subtitle="Databases with lifecycle and credential management">
+      <Card title="Managed by Podium" subtitle="Databases with lifecycle and credential management">
         <div v-if="loading" class="text-sm text-surface-muted">Loading…</div>
         <div v-else-if="!filteredManaged.length" class="text-sm text-surface-muted">
           {{ managed.length ? 'No managed databases in this tab.' : 'No managed databases yet. Create one above or ask SNR Dev.' }}

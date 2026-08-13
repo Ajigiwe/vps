@@ -8,7 +8,7 @@ from app.schemas.common import SchemaBase
 class WebmailSettingsResponse(SchemaBase):
     support_whatsapp: str
     support_url: str
-    product_name: str = "IFNOTUS Webmail"
+    product_name: str = "Podium Webmail"
     auto_detect_domains: bool = True
     updated_at: str | None = None
 

@@ -122,7 +122,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/SettingsView.vue'),
     meta: { requiresAuth: true },
   },
-  // IFNOTUS customer portal (product layer)
+  // Podium customer portal (product layer)
   {
     path: '/portal',
     name: 'portal-plans',
@@ -168,14 +168,14 @@ router.beforeEach(async (to) => {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
   if (to.meta.guestOnly && token) {
-    if (localStorage.getItem('ifnotus_portal') === '1') {
+    if (localStorage.getItem('Podium_portal') === '1') {
       return { name: 'portal-dashboard' }
     }
     return { name: 'dashboard' }
   }
 
   // Customer portal users land on portal dashboard, not staff WHM
-  if (token && to.name === 'dashboard' && localStorage.getItem('ifnotus_portal') === '1') {
+  if (token && to.name === 'dashboard' && localStorage.getItem('Podium_portal') === '1') {
     return { name: 'portal-dashboard' }
   }
 

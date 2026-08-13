@@ -26,7 +26,7 @@ async function login() {
     }
     localStorage.setItem('access_token', data.access_token)
     localStorage.setItem('refresh_token', data.refresh_token)
-    localStorage.setItem('ifnotus_portal', '1')
+    localStorage.setItem('Podium_portal', '1')
     await router.push({ name: 'portal-dashboard' })
   } catch (e: unknown) {
     const err = e as { response?: { data?: { error?: { message?: string } } } }
@@ -40,7 +40,7 @@ async function login() {
 <template>
   <div class="flex min-h-screen items-center justify-center bg-[#f4f6f8] px-4">
     <form class="w-full max-w-md rounded border border-slate-200 bg-white p-6 shadow-sm" @submit.prevent="login">
-      <h1 class="text-xl font-semibold">IFNOTUS Panel</h1>
+      <h1 class="text-xl font-semibold">Podium Panel</h1>
       <p class="mt-1 text-sm text-slate-500">Customer login</p>
       <p v-if="info" class="mt-3 text-sm text-emerald-700">{{ info }}</p>
       <div class="mt-5 space-y-3">

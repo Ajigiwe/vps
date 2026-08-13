@@ -346,7 +346,7 @@ async function clearServerCache(reloadNginx = false) {
                   <Badge :variant="categoryVariant(svc.category)" size="sm">
                     {{ svc.category || 'system' }}
                   </Badge>
-                  <Badge v-if="svc.managed_by_ifnotus" size="sm" variant="info">IFNOTUS</Badge>
+                  <Badge v-if="svc.managed_by_podium" size="sm" variant="info">Podium</Badge>
                 </div>
                 <p class="mt-1 font-mono text-xs text-surface-muted">
                   {{ svc.unit_name || svc.name }}

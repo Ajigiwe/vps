@@ -35,13 +35,13 @@ const isAiWriting = ref(false)
 const reviewingAi = ref(false)
 const viewMode = ref<ViewMode>('edit')
 const showAi = ref(true)
-const FONT_KEY = 'ifnotus.editor.fontSize'
-const WRAP_KEY = 'ifnotus.editor.wordWrap'
+const FONT_KEY = 'Podium.editor.fontSize'
+const WRAP_KEY = 'Podium.editor.wordWrap'
 const storedFont = Number(localStorage.getItem(FONT_KEY) || '14')
 const fontSize = ref(Number.isFinite(storedFont) ? Math.min(36, Math.max(10, storedFont)) : 14)
 const wordWrap = ref(localStorage.getItem(WRAP_KEY) !== '0')
 
-const storedEditorTheme = localStorage.getItem('ifnotus.editor.theme') as EditorColorMode | null
+const storedEditorTheme = localStorage.getItem('Podium.editor.theme') as EditorColorMode | null
 const colorMode = ref<EditorColorMode>(
   storedEditorTheme || (theme.isDark ? 'dark' : 'light'),
 )
@@ -83,7 +83,7 @@ const extension = computed(() => {
 })
 
 watch(colorMode, (mode) => {
-  localStorage.setItem('ifnotus.editor.theme', mode)
+  localStorage.setItem('Podium.editor.theme', mode)
   document.documentElement.classList.toggle('dark', mode === 'dark')
   document.documentElement.style.colorScheme = mode
 })
@@ -115,7 +115,7 @@ async function loadFile() {
     original.value = data.content ?? ''
     savedContent.value = data.content ?? ''
     meta.value = data
-    document.title = `${fileName.value} · IFNOTUS Editor`
+    document.title = `${fileName.value} · Podium Editor`
   } catch (e) {
     error.value = getApiErrorMessage(e, 'Failed to open file')
   } finally {

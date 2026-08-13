@@ -13,7 +13,6 @@ import ResourceChart from '@/components/dashboard/ResourceChart.vue'
 import ActivityTimeline from '@/components/dashboard/ActivityTimeline.vue'
 import DeploymentList from '@/components/dashboard/DeploymentList.vue'
 import QuickActions from '@/components/dashboard/QuickActions.vue'
-import DashboardAiFab from '@/components/ai/DashboardAiFab.vue'
 import { serverApi } from '@/api'
 import { getApiErrorMessage } from '@/lib/apiError'
 import { useDashboard } from '@/composables/useDashboard'
@@ -298,7 +297,5 @@ async function clearCentralCache() {
         </span>
       </section>
     </div>
-
-    <DashboardAiFab />
   </DashboardLayout>
 </template>

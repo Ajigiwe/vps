@@ -255,7 +255,7 @@ class DomainService:
         return await self._provision_entity(entity)
 
     async def reprovision_all(self) -> list[OperationResult]:
-        """Ensure /mail webmail on all nginx sites; fully reprovision IFNOTUS-managed domains."""
+        """Ensure /mail webmail on all nginx sites; fully reprovision Podium-managed domains."""
         results: list[OperationResult] = [
             await self._provisioner.ensure_webmail_on_all_sites(),
         ]

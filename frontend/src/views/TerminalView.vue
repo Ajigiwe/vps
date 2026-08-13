@@ -29,7 +29,7 @@ const history = ref<string[]>([])
 
 function openFullscreen() {
   const href = router.resolve({ name: 'terminal-full' }).href
-  const win = window.open(href, 'ifnotus-terminal-full')
+  const win = window.open(href, 'Podium-terminal-full')
   if (!win) {
     message.value = {
       ok: false,

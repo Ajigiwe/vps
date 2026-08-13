@@ -124,7 +124,7 @@ class AuthService:
                 ip_address=access_ctx.ip_address,
                 message=(
                     f"New IP {access_ctx.ip_address} needs approval. "
-                    f"On the server run: ifnotus-unlock pending — then enter the code here. "
+                    f"On the server run: podium-unlock pending — then enter the code here. "
                     f"Challenge ID: {challenge.challenge_id}"
                 ),
             )

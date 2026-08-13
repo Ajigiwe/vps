@@ -48,7 +48,7 @@ class ApplicationActionsService:
     def _history_dir(self, app: ApplicationDefinition) -> Path:
         if app.deployment.history_dir:
             return Path(app.deployment.history_dir)
-        return self._resolve_root(app) / ".ifnotus" / "deployments"
+        return self._resolve_root(app) / ".Podium" / "deployments"
 
     async def git_pull(self, app_id: str, *, triggered_by: str = "system") -> OperationResult:
         app = self._get_app(app_id)

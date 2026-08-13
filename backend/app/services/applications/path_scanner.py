@@ -27,7 +27,7 @@ SKIP_DIR_NAMES = frozenset(
         "__pycache__",
         ".venv",
         "venv",
-        ".ifnotus",
+        ".Podium",
         "dist",
         "build",
         "storage",

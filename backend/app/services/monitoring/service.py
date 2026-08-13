@@ -418,7 +418,7 @@ class MonitoringService:
         ports = ports or []
         services = services or []
 
-        port_labels = {8000: "IFNOTUS API", 5173: "Frontend", 5432: "PostgreSQL", 6379: "Redis"}
+        port_labels = {8000: "Podium API", 5173: "Frontend", 5432: "PostgreSQL", 6379: "Redis"}
         for port in missing_ports:
             label = port_labels.get(port, f"Service on port {port}")
             alerts.append(

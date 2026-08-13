@@ -108,7 +108,7 @@ onMounted(loadAudit)
         <button type="button" class="icon-btn" title="Close" @click="closeWindow">←</button>
         <span class="ext-chip">TERM</span>
         <div class="min-w-0">
-          <p class="truncate text-sm font-semibold text-emerald-100">IFNOTUS Terminal</p>
+          <p class="truncate text-sm font-semibold text-emerald-100">Podium Terminal</p>
           <p class="truncate font-mono text-[11px] text-emerald-500/70">
             {{ cwd || '~' }} · controlled execution
           </p>

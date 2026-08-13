@@ -378,11 +378,11 @@ onMounted(async () => {
                 </div>
                 <div class="flex items-center justify-between gap-4 border-t border-surface-border/70 pt-3">
                   <dt class="text-surface-muted">IMAP</dt>
-                  <dd class="font-mono text-xs">ifnotus.space:993 <span class="text-emerald-600">SSL</span></dd>
+                  <dd class="font-mono text-xs">Podium.space:993 <span class="text-emerald-600">SSL</span></dd>
                 </div>
                 <div class="flex items-center justify-between gap-4 border-t border-surface-border/70 pt-3">
                   <dt class="text-surface-muted">SMTP</dt>
-                  <dd class="font-mono text-xs">ifnotus.space:587 <span class="text-emerald-600">TLS</span></dd>
+                  <dd class="font-mono text-xs">Podium.space:587 <span class="text-emerald-600">TLS</span></dd>
                 </div>
               </dl>
             </div>

@@ -1,4 +1,4 @@
-IFNOTUS — VPS Production Deployment Readiness Audit
+Podium — VPS Production Deployment Readiness Audit
 ====================================================
 Date: 2026-07-06
 Scope: Production deployment risk (not feature completeness)
@@ -47,10 +47,10 @@ B. CRITICAL BLOCKERS
    - Static Nginx frontend does not listen on 5173 → constant false "Frontend not listening" alerts
 
 6. APPLICATION YAML paths.root IS CWD-RELATIVE (AMBIGUOUS ON VPS)
-   - applications/ifnotus-api.yaml: paths.root: "."
-   - applications/ifnotus-frontend.yaml: paths.root: "../frontend"
+   - applications/podium-api.yaml: paths.root: "."
+   - applications/podium-frontend.yaml: paths.root: "../frontend"
    - ApplicationDefinition.root_path = Path(string) with no anchor to repo root or YAML dir
-   - DeploymentHistoryReader uses app.root_path / ".ifnotus" / "deployments"
+   - DeploymentHistoryReader uses app.root_path / ".Podium" / "deployments"
    - Wrong CWD in systemd unit → broken deployment history, git/nginx/ssl readers
 
 7. MULTI-WORKER BACKEND BREAKS IN-MEMORY MONITORING STATE
@@ -111,9 +111,9 @@ frontend/src/components/layout/AppTopBar.vue + usePolling composables
   Issue: No bug for deploy, but polling starts per layout mount
   Fix: Acceptable if intervals cleared on unmount (they are). Document load expectations.
 
-applications/ifnotus-frontend.yaml (runtime.process_match)
+applications/podium-frontend.yaml (runtime.process_match)
   Issue: "vite.*5173|node.*vite" won't match production (static files)
-  Fix: Update process_match for prod (e.g. nginx worker) or disable ifnotus-frontend app entry
+  Fix: Update process_match for prod (e.g. nginx worker) or disable podium-frontend app entry
 
 No hardcoded localhost in frontend/src/*.vue|ts (verified) — good.
 
@@ -151,11 +151,11 @@ backend/app/cli/seed_admin.py + Makefile
   Issue: Default admin123 password
   Fix: Require explicit password arg in prod; never run seed with defaults on VPS
 
-applications/ifnotus-api.yaml
+applications/podium-api.yaml
   Issue: paths.root: "." — resolves relative to process CWD
-  Fix: Use absolute path e.g. /opt/ifnotus/backend or resolve paths relative to YAML file
+  Fix: Use absolute path e.g. /opt/Podium/backend or resolve paths relative to YAML file
 
-applications/ifnotus-api.yaml + ifnotus-frontend.yaml
+applications/podium-api.yaml + podium-frontend.yaml
   Issue: nginx.server_name: localhost, ssl.domain: localhost
   Fix: Set production domain in YAML for accurate nginx/ssl monitoring
 
@@ -185,7 +185,7 @@ E. REQUIRED NGINX / VPS ASSUMPTIONS
 Production server must provide:
 
 1. Static frontend root
-   - Path: e.g. /var/www/ifnotus/dist (output of cd frontend && npm run build)
+   - Path: e.g. /var/www/podium/dist (output of cd frontend && npm run build)
    - NOT Vite dev server on 5173
 
 2. Backend upstream (internal only)
@@ -229,7 +229,7 @@ Production server must provide:
    - Running on VPS or managed service; DATABASE_URL and REDIS_URL in backend .env
 
 9. systemd (recommended)
-   - WorkingDirectory=/opt/ifnotus (repo root) so applications/ and paths resolve consistently
+   - WorkingDirectory=/opt/Podium (repo root) so applications/ and paths resolve consistently
    - Run alembic upgrade head before first start
    - Do not expose Makefile seed-admin defaults in prod
 
@@ -239,7 +239,7 @@ F. REQUIRED PRODUCTION ENVIRONMENT VARIABLES
 
 Backend (.env on VPS):
 
-  APP_NAME=IFNOTUS
+  APP_NAME=Podium
   APP_VERSION=0.1.0
   ENVIRONMENT=production
   DEBUG=false
@@ -255,13 +255,13 @@ Backend (.env on VPS):
   REFRESH_TOKEN_EXPIRE_DAYS=7
   CORS_ORIGINS=https://your-domain.com
 
-  DATABASE_URL=postgresql+asyncpg://user:pass@127.0.0.1:5432/ifnotus
+  DATABASE_URL=postgresql+asyncpg://user:pass@127.0.0.1:5432/Podium
   REDIS_URL=redis://127.0.0.1:6379/0
 
   LOG_LEVEL=INFO
   LOG_JSON=true
 
-  APPLICATIONS_DIR=/opt/ifnotus/applications
+  APPLICATIONS_DIR=/opt/Podium/applications
   MONITORING_EXPECTED_PORTS=8000,5432,6379
   MONITORING_LOG_PATHS=/var/log/syslog
   NGINX_CONFIG_PATH=/etc/nginx
@@ -362,7 +362,7 @@ Smoke tests (production URL)
 Security
   [ ] SECRET_KEY rotated from example
   [ ] admin123 not in use
-  [ ] Database credentials not default ifnotus:ifnotus unless intentional
+  [ ] Database credentials not default Podium:Podium unless intentional
   [ ] Only 443 (and 80 redirect) exposed publicly
 
 Post-deploy verify

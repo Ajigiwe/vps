@@ -8,7 +8,7 @@ from redis.asyncio import Redis
 
 def cache_key(namespace: str, *parts: str) -> str:
     """Build a namespaced cache key."""
-    return f"ifnotus:cache:{namespace}:{':'.join(parts)}"
+    return f"podium:cache:{namespace}:{':'.join(parts)}"
 
 
 async def get_cached(redis: Redis, key: str) -> Any | None:

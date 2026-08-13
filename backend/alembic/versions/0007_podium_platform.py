@@ -1,4 +1,4 @@
-"""IFNOTUS product layer: customers, plans, orders, environments."""
+"""Podium product layer: customers, plans, orders, environments."""
 
 from typing import Sequence, Union
 
@@ -6,7 +6,7 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
 
-revision: str = "0007_ifnotus_platform"
+revision: str = "0007_Podium_platform"
 down_revision: Union[str, None] = "0006_security_firewall_audit"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -306,7 +306,7 @@ def upgrade() -> None:
                 "storage_total_gb": 242,
                 "cpu_reserved_pct": 20,
                 "status": "healthy",
-                "notes": "Primary IFNOTUS node — existing operator workloads live here.",
+                "notes": "Primary Podium node — existing operator workloads live here.",
             }
         ],
     )
@@ -327,7 +327,7 @@ def _plan(
     import uuid
 
     return {
-        "id": str(uuid.uuid5(uuid.NAMESPACE_URL, f"ifnotus:plan:{slug}")),
+        "id": str(uuid.uuid5(uuid.NAMESPACE_URL, f"Podium:plan:{slug}")),
         "slug": slug,
         "name": name,
         "cpu_cores": cpu,
@@ -338,7 +338,7 @@ def _plan(
         "price_monthly": monthly,
         "price_yearly": monthly * 10,
         "currency": "GHS",
-        "features": {"items": features, "panel": "ifnotus"},
+        "features": {"items": features, "panel": "Podium"},
         "sort_order": order,
         "is_active": True,
     }

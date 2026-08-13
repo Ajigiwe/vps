@@ -16,7 +16,7 @@ from app.schemas.ai import AiSettingsResponse, AiSettingsUpdateRequest
 
 
 class AiSettingsStore:
-    """File-backed AI settings under `.ifnotus/settings/ai.json`."""
+    """File-backed AI settings under `.podium/settings/ai.json`."""
 
     def __init__(self, settings: Settings) -> None:
         self._settings = settings

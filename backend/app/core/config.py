@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     )
 
     # Application
-    app_name: str = "IFNOTUS"
+    app_name: str = "Podium"
     app_version: str = "0.1.0"
     environment: Environment = Environment.DEVELOPMENT
     debug: bool = False
@@ -68,7 +68,7 @@ class Settings(BaseSettings):
 
     # Redis
     redis_url: RedisDsn = "redis://localhost:6379/0"  # type: ignore[assignment]
-    redis_task_queue: str = "ifnotus:tasks"
+    redis_task_queue: str = "podium:tasks"
     redis_cache_ttl_seconds: int = 300
 
     # Logging
@@ -109,7 +109,7 @@ class Settings(BaseSettings):
     applications_reload_interval_seconds: int = 60
 
     # Operations
-    operations_backup_dir: str = ".ifnotus/backups"
+    operations_backup_dir: str = ".podium/backups"
     worker_service_name: str | None = None
 
     # SMTP (optional)
@@ -127,13 +127,13 @@ class Settings(BaseSettings):
     certbot_binary: str | None = None
     server_public_ip: str | None = None
     hosting_allowed_paths: Annotated[list[str], NoDecode] = Field(default_factory=list)
-    mail_config_dir: str = ".ifnotus/mail"
+    mail_config_dir: str = ".podium/mail"
     mail_vmail_dir: str = "/var/vmail"
     mail_vmail_root: str = "/var/vmail"
     terminal_command_timeout: int = 30
     terminal_max_output_bytes: int = 65536
     file_upload_chunk_size: int = 2_097_152
-    file_upload_temp_dir: str = ".ifnotus/upload-sessions"
+    file_upload_temp_dir: str = ".podium/upload-sessions"
 
     # VPS discovery (read-only scanning)
     discovery_scan_paths: Annotated[list[str], NoDecode] = Field(
@@ -142,7 +142,7 @@ class Settings(BaseSettings):
     discovery_max_depth: int = 4
     discovery_auto_register: bool = True
     discovery_auto_register_exclude: Annotated[list[str], NoDecode] = Field(
-        default_factory=lambda: ["/srv/apps/ifnotus", "/var/www/ifnotus"]
+        default_factory=lambda: ["/srv/apps/podium", "/var/www/podium"]
     )
     nginx_sites_enabled: str = "/etc/nginx/sites-enabled"
     nginx_sites_available: str = "/etc/nginx/sites-available"
@@ -152,12 +152,12 @@ class Settings(BaseSettings):
     deepseek_api_key: str | None = None
     deepseek_base_url: str = "https://api.deepseek.com"
     deepseek_model: str = "deepseek-chat"
-    ai_settings_path: str = ".ifnotus/settings/ai.json"
-    webmail_settings_path: str = ".ifnotus/settings/webmail.json"
+    ai_settings_path: str = ".podium/settings/ai.json"
+    webmail_settings_path: str = ".podium/settings/webmail.json"
     webmail_support_whatsapp: str = "+233541069241"
     webmail_brand_assets_dir: str = "assets/webmail"
     roundcube_config_path: str = "/etc/roundcube/config.inc.php"
-    ai_memory_path: str = ".ifnotus/ai"
+    ai_memory_path: str = ".podium/ai"
     ai_allowed_paths: Annotated[list[str], NoDecode] = Field(
         default_factory=lambda: ["/srv/apps", "/var/www", "/opt", "/etc/nginx", "/var/log"]
     )
@@ -172,23 +172,23 @@ class Settings(BaseSettings):
     admin_require_fingerprint: bool = False
 
     # Cutoffs for host-side log streams cleared from the panel
-    log_clear_state_path: str = ".ifnotus/state/log-clears.json"
+    log_clear_state_path: str = ".podium/state/log-clears.json"
 
     # Host database management (SQLite / MySQL / PostgreSQL / MongoDB)
-    databases_registry_path: str = ".ifnotus/databases/registry.json"
+    databases_registry_path: str = ".podium/databases/registry.json"
     databases_sqlite_root: str = "/srv/apps"
-    databases_backup_root: str = ".ifnotus/databases/backups"
+    databases_backup_root: str = ".podium/databases/backups"
 
     # Background workers
     worker_concurrency: int = 4
     worker_poll_interval_seconds: float = 1.0
 
-    # IFNOTUS product layer (customers / billing / provision)
+    # Podium product layer (customers / billing / provision)
     paystack_secret_key: str | None = None
     paystack_public_key: str | None = None
     paystack_base_url: str = "https://api.paystack.co"
-    customer_portal_url: str = "https://ifnotus.space"
-    customer_environments_root: str = "/srv/apps/ifnotus-customers"
+    customer_portal_url: str = "https://Podium.space"
+    customer_environments_root: str = "/srv/apps/podium-customers"
     namecheap_api_user: str | None = None
     namecheap_api_key: str | None = None
     namecheap_client_ip: str | None = None
@@ -237,7 +237,7 @@ class Settings(BaseSettings):
     def parse_auto_register_exclude(cls, value: str | list[str]) -> list[str]:
         if isinstance(value, str):
             return [path.strip() for path in value.split(",") if path.strip()]
-        return value if isinstance(value, list) else ["/srv/apps/ifnotus", "/var/www/ifnotus"]
+        return value if isinstance(value, list) else ["/srv/apps/podium", "/var/www/podium"]
 
     @field_validator("ai_allowed_paths", mode="before")
     @classmethod

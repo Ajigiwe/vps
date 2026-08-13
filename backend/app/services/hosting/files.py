@@ -145,7 +145,7 @@ class FileManagerService:
         entries: list[FileEntry] = []
         if target.is_dir():
             for child in sorted(target.iterdir(), key=lambda p: (not p.is_dir(), p.name.lower())):
-                if child.name.startswith(".") and child.name not in {".ifnotus"}:
+                if child.name.startswith(".") and child.name not in {".Podium"}:
                     continue
                 detail = self._file_detail(child, base)
                 entries.append(
