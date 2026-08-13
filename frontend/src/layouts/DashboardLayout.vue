@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
 import AppTopBar from '@/components/layout/AppTopBar.vue'
 
@@ -11,8 +12,16 @@ defineEmits<{
   refresh: []
 }>()
 
+const route = useRoute()
 const sidebarCollapsed = ref(false)
 const mobileNavOpen = ref(false)
+
+watch(
+  () => route.fullPath,
+  () => {
+    mobileNavOpen.value = false
+  },
+)
 </script>
 
 <template>

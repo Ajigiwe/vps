@@ -18,6 +18,13 @@ def main() -> None:
     container = create_container()
     container.wire(modules=["app.workers.runner"])
 
+    from app.workers.registry import task_registry
+    from app.workers.tasks_platform import ProvisionEnvironmentTask, SubscriptionTickTask
+
+    factory = container.db_session_factory()
+    task_registry.register(ProvisionEnvironmentTask(settings=settings, session_factory=factory))
+    task_registry.register(SubscriptionTickTask(settings=settings, session_factory=factory))
+
     runner = WorkerRunner(
         settings=settings,
         task_queue=container.task_queue(),

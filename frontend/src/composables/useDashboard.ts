@@ -21,7 +21,7 @@ function mapServiceStatus(status: string): ServiceStatus {
     stopped: 'stopped',
     degraded: 'degraded',
     unknown: 'unknown',
-    failed: 'stopped',
+    failed: 'failed',
   }
   return map[status] ?? 'unknown'
 }
@@ -49,25 +49,20 @@ function mapManagedService(svc: ApiManagedService): ServiceItem {
   }
 }
 
-async function fetchRegisteredApplications(): Promise<ApplicationItem[]> {
-  try {
-    const { data } = await applicationsApi.list()
-    return data.applications.map((app) => ({
-      id: app.id,
-      name: app.name,
-      status: mapServiceStatus(String(app.status)),
-      version: app.version ?? undefined,
-      environment: app.environment,
-    }))
-  } catch {
-    return []
-  }
+function mapDashboardApplications(dashboard: DashboardApiResponse): ApplicationItem[] {
+  return (dashboard.applications ?? []).map((app) => ({
+    id: app.id,
+    name: app.name,
+    status: mapServiceStatus(String(app.status)),
+    version: app.version ?? undefined,
+    environment: app.environment ?? undefined,
+  }))
 }
 
-async function fetchRecentDeployments(): Promise<DeploymentItem[]> {
+async function fetchRecentDeployments(): Promise<DeploymentItem[] | null> {
   try {
     const { data: list } = await applicationsApi.list()
-    const enabled = list.applications.filter((app) => app.enabled).slice(0, 4)
+    const enabled = list.applications.filter((app) => app.enabled).slice(0, 6)
     const batches = await Promise.allSettled(
       enabled.map((app) => applicationsApi.deployments(app.id)),
     )
@@ -93,7 +88,7 @@ async function fetchRecentDeployments(): Promise<DeploymentItem[]> {
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
       .slice(0, 8)
   } catch {
-    return []
+    return null
   }
 }
 
@@ -102,7 +97,6 @@ function mapDashboardResponse(
   health: HealthResponse | null,
   readiness: ReadinessResponse | null,
   deployments: DeploymentItem[],
-  applications: ApplicationItem[],
 ): DashboardData {
   const metrics: SystemMetrics = {
     timestamp: dashboard.timestamp,
@@ -124,7 +118,7 @@ function mapDashboardResponse(
     })),
     servers: dashboard.servers,
     services: dashboard.services.map(mapManagedService),
-    applications,
+    applications: mapDashboardApplications(dashboard),
     alerts: dashboard.alerts.map((a) => ({
       id: a.id,
       title: a.title,
@@ -151,6 +145,7 @@ export function useDashboard() {
   const loading = ref(true)
   const refreshing = ref(false)
   const error = ref<string | null>(null)
+  const extrasError = ref<string | null>(null)
   let timer: ReturnType<typeof setInterval> | null = null
   let pollCount = 0
 
@@ -163,15 +158,16 @@ export function useDashboard() {
   )
 
   async function loadExtras() {
-    const [deployments, applications] = await Promise.all([
-      fetchRecentDeployments(),
-      fetchRegisteredApplications(),
-    ])
+    const deployments = await fetchRecentDeployments()
     if (!data.value) return
+    if (deployments === null) {
+      extrasError.value = 'Could not load recent deployments.'
+      return
+    }
+    extrasError.value = null
     data.value = {
       ...data.value,
       deployments,
-      applications,
     }
   }
 
@@ -181,12 +177,16 @@ export function useDashboard() {
       refreshing.value = false
       return
     }
-    if (isRefresh) refreshing.value = true
-    else loading.value = true
+    if (typeof document !== 'undefined' && document.hidden && isRefresh) {
+      return
+    }
+    // Keep background polls silent — flipping refreshing causes layout thrash / dead clicks.
+    if (!isRefresh) {
+      loading.value = true
+    }
     error.value = null
 
     try {
-      // Paint core dashboard first — do not block on N+1 deployment fan-out.
       const [dashboardRes, healthRes, readinessRes] = await Promise.all([
         monitoringApi.dashboard(),
         healthApi.liveness().catch(() => null),
@@ -198,7 +198,6 @@ export function useDashboard() {
         healthRes?.data ?? null,
         readinessRes?.data ?? null,
         data.value?.deployments ?? [],
-        data.value?.applications ?? [],
       )
       loading.value = false
 
@@ -213,6 +212,12 @@ export function useDashboard() {
     }
   }
 
+  function onVisibility() {
+    if (!document.hidden && localStorage.getItem('access_token')) {
+      fetchDashboard(true, { withExtras: false })
+    }
+  }
+
   onMounted(() => {
     if (!localStorage.getItem('access_token')) {
       loading.value = false
@@ -224,10 +229,12 @@ export function useDashboard() {
       // Refresh extras every 6th poll (~30s) to keep the 5s loop light.
       fetchDashboard(true, { withExtras: pollCount % 6 === 0 })
     }, REALTIME_POLL_MS)
+    document.addEventListener('visibilitychange', onVisibility)
   })
 
   onUnmounted(() => {
     if (timer) clearInterval(timer)
+    document.removeEventListener('visibilitychange', onVisibility)
   })
 
   return {
@@ -235,6 +242,7 @@ export function useDashboard() {
     loading,
     refreshing,
     error,
+    extrasError,
     runningServices,
     activeApplications,
     refresh: () => fetchDashboard(true, { withExtras: true }),

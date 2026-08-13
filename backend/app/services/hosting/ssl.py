@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -39,7 +40,9 @@ class SslService:
 
     async def list_certificates(self) -> SslListResponse:
         domains = await self._domains.list_all()
-        certs = [await self._build_certificate(domain) for domain in domains]
+        certs = list(
+            await asyncio.gather(*(self._build_certificate(domain) for domain in domains))
+        )
         db_names = {d.name for d in domains}
 
         for cert in certs:
@@ -110,8 +113,9 @@ class SslService:
         elif dns.points_to_server:
             checks["dns_points_here"] = True
 
-        document_root = entity.document_root
-        cert_path = entity.ssl_certificate_path or self._default_cert_path(name)
+        nginx = self._nginx.read(None, name)
+        document_root = await self._resolve_webroot(entity, nginx_root=nginx.root, ensure=False)
+        cert_path = await self._resolve_cert_path(entity)
         if document_root:
             root = Path(document_root)
             checks["webroot_exists"] = root.exists()
@@ -121,11 +125,10 @@ class SslService:
             checks["webroot_exists"] = False
             messages.append("No document root configured for domain.")
 
-        checks["certificate_file_exists"] = Path(cert_path).exists()
+        checks["certificate_file_exists"] = Path(cert_path).exists() if cert_path else False
         if not checks["certificate_file_exists"]:
             messages.append("No certificate file on disk yet (expected for first issuance).")
 
-        nginx = self._nginx.read(None, name)
         checks["nginx_ssl_block"] = bool(nginx.ssl_enabled)
         if not nginx.ssl_enabled:
             messages.append("Nginx SSL/443 block not detected for this hostname.")
@@ -186,29 +189,31 @@ class SslService:
         )
 
     async def _build_certificate(self, domain: Domain) -> SslCertificateSchema:
-        cert_path = domain.ssl_certificate_path or self._default_cert_path(domain.name)
-        status = await self._reader.read(cert_path, domain.name)
+        nginx = await asyncio.to_thread(self._nginx.read, None, domain.name)
+        cert_path = await self._resolve_cert_path(domain, nginx_cert=nginx.certificate_path)
+        configured = bool(cert_path and Path(cert_path).exists())
+        status = await self._reader.read(cert_path, domain.name, light=True) if configured else None
         live_dir = Path(cert_path).parent if cert_path else None
-        nginx = self._nginx.read(None, domain.name)
+        document_root = await self._resolve_webroot(domain, nginx_root=nginx.root, ensure=False)
         return SslCertificateSchema(
             domain_id=domain.id,
             domain=domain.name,
-            configured=status.configured and Path(cert_path).exists(),
-            certificate_path=cert_path if status.configured and Path(cert_path).exists() else None,
+            configured=configured and bool(status and status.configured),
+            certificate_path=cert_path if configured else None,
             private_key_path=str(live_dir / "privkey.pem") if live_dir and (live_dir / "privkey.pem").exists() else None,
-            chain_path=cert_path if status.configured and Path(cert_path).exists() else None,
-            subject=status.subject,
-            issuer=status.issuer,
-            valid_from=status.valid_from,
-            valid_until=status.valid_until,
-            days_remaining=status.days_remaining,
-            status=status.status,
-            sans=status.sans,
-            fingerprint_sha256=status.fingerprint_sha256,
-            document_root=domain.document_root,
+            chain_path=cert_path if configured else None,
+            subject=status.subject if status else None,
+            issuer=status.issuer if status else None,
+            valid_from=status.valid_from if status else None,
+            valid_until=status.valid_until if status else None,
+            days_remaining=status.days_remaining if status else None,
+            status=status.status if status else None,
+            sans=status.sans if status else [],
+            fingerprint_sha256=status.fingerprint_sha256 if status else None,
+            document_root=document_root or domain.document_root,
             domain_enabled=domain.enabled,
             nginx_ssl_enabled=nginx.ssl_enabled,
-            message=status.message,
+            message=status.message if status else "No certificate found for this hostname.",
         )
 
     @staticmethod
@@ -241,17 +246,36 @@ class SslService:
         if entity is None:
             raise NotFoundError(f"Domain '{domain}' not registered in IFNOTUS.")
 
+        nginx = await asyncio.to_thread(self._nginx.read, None, domain)
+        parent = None
+        if entity.parent_domain_id:
+            parent = await self._domains.get_by_id(entity.parent_domain_id)
+
         if action == "renew":
-            args = [certbot, "renew", "--non-interactive", "--cert-name", domain]
+            cert_name = self._cert_name_for_renew(entity, parent)
+            args = [certbot, "renew", "--non-interactive", "--cert-name", cert_name]
         else:
-            args = [certbot, "certonly", "-d", domain, "--non-interactive", "--agree-tos"]
+            names = self._issue_domain_names(entity, parent)
+            cert_name = self._preferred_cert_name(entity, parent)
+            args = [certbot, "certonly", "--non-interactive", "--agree-tos", "--cert-name", cert_name]
+            for name in names:
+                args.extend(["-d", name])
             if body.email:
                 args.extend(["--email", body.email])
             else:
                 args.append("--register-unsafely-without-email")
-            webroot = body.webroot or entity.document_root
-            if webroot:
-                args.extend(["--webroot", "-w", webroot])
+            webroot = body.webroot or await self._resolve_webroot(entity, nginx_root=nginx.root, ensure=True)
+            if not webroot or not Path(webroot).is_dir():
+                return OperationResult(
+                    success=False,
+                    message=(
+                        f"Webroot missing for {domain}. "
+                        "Set an existing document root, or ensure /var/www/letsencrypt exists "
+                        "and nginx serves /.well-known/acme-challenge/ from it."
+                    ),
+                    details={"domain": domain, "webroot": webroot},
+                )
+            args.extend(["--webroot", "-w", webroot])
             if force:
                 args.append("--force-renewal")
 
@@ -260,16 +284,127 @@ class SslService:
 
         code, stdout, stderr = await run_command(*args, timeout=300)
         if code == 0 and not body.dry_run:
-            default_path = self._default_cert_path(domain)
+            default_path = self._default_cert_path(self._preferred_cert_name(entity, parent))
             if Path(default_path).exists():
                 entity.ssl_certificate_path = default_path
+                if entity.document_root and not Path(entity.document_root).is_dir() and nginx.root:
+                    entity.document_root = nginx.root
                 await self._domains.update(entity)
+                if parent is not None:
+                    parent.ssl_certificate_path = default_path
+                    await self._domains.update(parent)
 
         return OperationResult(
             success=code == 0,
             message=self._action_message(code, stdout, stderr, action),
             details={"domain": domain, "exit_code": code, "stdout": stdout, "stderr": stderr},
         )
+
+    async def _resolve_webroot(
+        self,
+        entity: Domain,
+        *,
+        nginx_root: str | None = None,
+        ensure: bool = True,
+    ) -> str | None:
+        candidates: list[str] = []
+        if entity.document_root:
+            candidates.append(entity.document_root)
+        if nginx_root:
+            candidates.append(nginx_root)
+        if entity.parent_domain_id:
+            parent = await self._domains.get_by_id(entity.parent_domain_id)
+            if parent and parent.document_root:
+                candidates.append(parent.document_root)
+        shared = "/var/www/letsencrypt"
+        candidates.append(shared)
+
+        for candidate in candidates:
+            path = Path(candidate)
+            if path.is_dir():
+                return str(path)
+
+        if ensure:
+            shared_path = Path(shared)
+            shared_path.mkdir(parents=True, exist_ok=True)
+            return str(shared_path)
+        return entity.document_root or nginx_root
+
+    async def _resolve_cert_path(
+        self, entity: Domain, *, nginx_cert: str | None = None
+    ) -> str | None:
+        candidates: list[str] = []
+        if entity.ssl_certificate_path:
+            candidates.append(entity.ssl_certificate_path)
+        if nginx_cert:
+            candidates.append(nginx_cert)
+        candidates.append(self._default_cert_path(entity.name))
+
+        if entity.parent_domain_id:
+            parent = await self._domains.get_by_id(entity.parent_domain_id)
+            if parent:
+                if parent.ssl_certificate_path:
+                    candidates.append(parent.ssl_certificate_path)
+                candidates.append(self._default_cert_path(parent.name))
+
+        # Apex without www / www without apex — common Let's Encrypt layout
+        if entity.name.startswith("www."):
+            candidates.append(self._default_cert_path(entity.name[4:]))
+        else:
+            candidates.append(self._default_cert_path(f"www.{entity.name}"))
+
+        for candidate in candidates:
+            if candidate and Path(candidate).exists():
+                return candidate
+
+        # Last resort: any live cert whose SANs include this hostname
+        live_dir = Path(self._settings.letsencrypt_live_dir)
+        if live_dir.exists():
+            for domain_dir in sorted(live_dir.iterdir()):
+                fullchain = domain_dir / "fullchain.pem"
+                if not fullchain.exists():
+                    continue
+                status = await self._reader.read(str(fullchain), domain_dir.name, light=True)
+                sans = {s.lower() for s in (status.sans or [])}
+                if entity.name.lower() in sans or entity.name.lower() == domain_dir.name.lower():
+                    return str(fullchain)
+        return candidates[0] if candidates else None
+
+    @staticmethod
+    def _preferred_cert_name(entity: Domain, parent: Domain | None) -> str:
+        if parent is not None:
+            return parent.name
+        if entity.name.startswith("www."):
+            return entity.name[4:]
+        return entity.name
+
+    @staticmethod
+    def _cert_name_for_renew(entity: Domain, parent: Domain | None) -> str:
+        preferred = SslService._preferred_cert_name(entity, parent)
+        if Path(SslService._default_cert_path(preferred)).exists():
+            return preferred
+        if Path(SslService._default_cert_path(entity.name)).exists():
+            return entity.name
+        return preferred
+
+    @staticmethod
+    def _issue_domain_names(entity: Domain, parent: Domain | None) -> list[str]:
+        names: list[str] = []
+        if parent is not None:
+            names.append(parent.name)
+        names.append(entity.name)
+        # Keep apex + www together when issuing the www alias
+        if entity.name.startswith("www."):
+            apex = entity.name[4:]
+            if apex not in names:
+                names.insert(0, apex)
+        seen: set[str] = set()
+        out: list[str] = []
+        for name in names:
+            if name not in seen:
+                seen.add(name)
+                out.append(name)
+        return out
 
     @staticmethod
     def _build_summary(certs: list[SslCertificateSchema]) -> SslSummarySchema:

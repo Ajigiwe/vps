@@ -6,6 +6,7 @@ import {
   IconChart,
   IconChevron,
   IconDashboard,
+  IconDatabase,
   IconDeploy,
   IconFolder,
   IconGlobe,
@@ -13,6 +14,7 @@ import {
   IconMail,
   IconServer,
   IconSettings,
+  IconShield,
   IconTerminal,
 } from '@/components/icons'
 import { usePermissions } from '@/composables/usePermissions'
@@ -44,10 +46,12 @@ const allNavItems: Array<{
   { to: '/applications', name: 'applications', label: 'Applications', icon: IconApp, permission: Permission.APPS_READ },
   { to: '/operations', name: 'operations', label: 'Operations', icon: IconDeploy, permission: Permission.SYSTEM_READ },
   { to: '/domains', name: 'domains', label: 'Domains', icon: IconGlobe, permission: Permission.DOMAINS_READ },
+  { to: '/databases', name: 'databases', label: 'Databases', icon: IconDatabase, permission: Permission.DATABASES_READ },
   { to: '/ssl', name: 'ssl', label: 'SSL', icon: IconLock, permission: Permission.SSL_READ },
-  { to: '/mail', name: 'mail', label: 'Mail', icon: IconMail, permission: Permission.MAIL_READ },
+  { to: '/admin/mail', name: 'mail-admin', label: 'Mail', icon: IconMail, permission: Permission.MAIL_READ },
   { to: '/files', name: 'files', label: 'Files', icon: IconFolder, permission: Permission.FILES_READ },
   { to: '/terminal', name: 'terminal', label: 'Terminal', icon: IconTerminal, permission: Permission.TERMINAL_EXECUTE },
+  { to: '/security', name: 'security', label: 'Security', icon: IconShield, permission: Permission.SYSTEM_ADMIN },
   { to: '/servers', name: 'servers', label: 'Servers', icon: IconServer, permission: Permission.SERVERS_READ },
   { to: '/settings', name: 'settings', label: 'Settings', icon: IconSettings },
 ]
@@ -63,7 +67,7 @@ const activeName = computed(() => route.name)
   <aside
     class="fixed inset-y-0 left-0 z-40 flex h-screen shrink-0 flex-col overflow-hidden border-r border-surface-border bg-surface-raised transition-all duration-300 ease-smooth lg:relative lg:translate-x-0"
     :class="[
-      mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
+      mobileOpen ? 'translate-x-0 pointer-events-auto' : '-translate-x-full pointer-events-none lg:translate-x-0 lg:pointer-events-auto',
       collapsed ? 'w-[72px]' : 'w-64',
     ]"
     aria-label="Main navigation"
@@ -84,7 +88,7 @@ const activeName = computed(() => route.name)
       </RouterLink>
     </div>
 
-    <nav class="flex-1 space-y-1 overflow-hidden p-3" role="navigation">
+    <nav class="flex-1 space-y-1 overflow-y-auto p-3" role="navigation">
       <component
         :is="RouterLink"
         v-for="item in navItems"

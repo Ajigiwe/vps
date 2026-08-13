@@ -18,6 +18,8 @@ export const Permission = {
   MAIL_READ: 'mail:read',
   MAIL_WRITE: 'mail:write',
   TERMINAL_EXECUTE: 'terminal:execute',
+  DATABASES_READ: 'databases:read',
+  DATABASES_WRITE: 'databases:write',
   MONITORING_READ: 'monitoring:read',
 } as const
 

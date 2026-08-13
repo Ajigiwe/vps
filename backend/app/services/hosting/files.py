@@ -29,13 +29,27 @@ from app.services.applications.path_scanner import ApplicationPathScanner
 
 
 class FileManagerService:
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, settings: Settings, *, admin_storage: bool = False) -> None:
         self._settings = settings
+        self._admin_storage = admin_storage
         self._apps = ApplicationRepository(settings)
         self._path_scanner = ApplicationPathScanner(settings)
 
+    def _admin_storage_roots(self) -> list[Path]:
+        """Privileged server storage roots exposed only to admin users."""
+        if not self._admin_storage:
+            return []
+        candidates = [
+            (Path("/srv"), "Server storage"),
+            (Path("/var/www"), "Web storage"),
+            (Path("/var/vmail"), "Mail storage"),
+            (Path("/var/backups"), "Backups"),
+        ]
+        return [path.resolve() for path, _ in candidates if path.exists()]
+
     def allowed_roots(self) -> list[Path]:
         roots: list[Path] = []
+        roots.extend(self._admin_storage_roots())
         for raw in self._settings.hosting_allowed_paths:
             roots.append(Path(raw).resolve())
         for app in self._apps.list_all():
@@ -54,7 +68,25 @@ class FileManagerService:
         roots: list[FileRootSchema] = []
         seen_paths: set[str] = set()
 
+        admin_labels = {
+            "/srv": "Storage: Server (/srv)",
+            "/var/www": "Storage: Web (/var/www)",
+            "/var/vmail": "Storage: Mail (/var/vmail)",
+            "/var/backups": "Storage: Backups (/var/backups)",
+        }
+        for index, path in enumerate(self._admin_storage_roots()):
+            roots.append(
+                FileRootSchema(
+                    id=f"storage:{index}",
+                    label=admin_labels.get(str(path), f"Storage: {path}"),
+                    path=str(path),
+                )
+            )
+            seen_paths.add(str(path))
+
         for index, path in enumerate(self._hosting_roots()):
+            if str(path) in seen_paths:
+                continue
             roots.append(
                 FileRootSchema(
                     id=f"root:{index}",
@@ -324,9 +356,25 @@ class FileManagerService:
         return (Path.cwd() / root).resolve()
 
     def _resolve_base(self, app_id: str | None, root_id: str | None = None) -> Path:
+        # Frontend may mis-send storage/root ids as app_id — normalize.
+        if app_id and (
+            app_id.startswith("storage:")
+            or app_id.startswith("root:")
+            or app_id.startswith("discovered:")
+        ):
+            root_id = app_id
+            app_id = None
         if app_id:
             app = self._apps.get(app_id)
             return self._app_root(app)
+        if root_id and root_id.startswith("storage:"):
+            if not self._admin_storage:
+                raise AppException("Admin storage access required.", code="forbidden")
+            index = int(root_id.split(":", 1)[1])
+            roots = self._admin_storage_roots()
+            if index < 0 or index >= len(roots):
+                raise AppException("Invalid storage root.", code="invalid_root")
+            return roots[index]
         if root_id and root_id.startswith("discovered:"):
             slug = root_id.split(":", 1)[1]
             resolved = self._path_scanner.resolve_discovered_root(slug)
@@ -343,14 +391,11 @@ class FileManagerService:
 
     def _safe_path(self, base: Path, path: str) -> Path:
         base = base.resolve()
-        for root in self.allowed_roots():
-            if str(base).startswith(str(root)) or base == root:
-                break
-        else:
-            if base not in self.allowed_roots():
-                raise AppException("Path not in allowed roots.", code="forbidden")
+        allowed = [root.resolve() for root in self.allowed_roots()]
+        if not any(base == root or base.is_relative_to(root) for root in allowed):
+            raise AppException("Path not in allowed roots.", code="forbidden")
         target = (base / path.lstrip("/")).resolve()
-        if not any(str(target).startswith(str(r)) for r in self.allowed_roots()):
+        if not any(target == root or target.is_relative_to(root) for root in allowed):
             raise AppException("Path traversal denied.", code="forbidden")
         return target
 

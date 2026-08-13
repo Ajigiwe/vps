@@ -102,7 +102,25 @@ function formatUptime(seconds: number) {
 }
 
 const cacheBusy = ref(false)
+const refreshBusy = ref(false)
 const cacheMessage = ref<{ ok: boolean; text: string } | null>(null)
+
+async function refreshServer() {
+  refreshBusy.value = true
+  cacheMessage.value = null
+  try {
+    const { data } = await serverApi.refresh(true)
+    cacheMessage.value = { ok: data.success, text: data.message }
+    refreshAll()
+  } catch (e) {
+    cacheMessage.value = {
+      ok: false,
+      text: getApiErrorMessage(e, 'Failed to refresh server'),
+    }
+  } finally {
+    refreshBusy.value = false
+  }
+}
 
 async function clearServerCache(reloadNginx = false) {
   cacheBusy.value = true
@@ -131,16 +149,24 @@ async function clearServerCache(reloadNginx = false) {
         <div class="mb-4 flex flex-wrap items-center gap-2">
           <button
             type="button"
-            class="rounded-lg border border-surface-border px-3 py-1.5 text-xs hover:bg-slate-50 disabled:opacity-50 dark:hover:bg-slate-800"
-            :disabled="cacheBusy"
-            @click="clearServerCache(false)"
+            class="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+            :disabled="refreshBusy || cacheBusy"
+            @click="refreshServer"
           >
-            {{ cacheBusy ? 'Clearing…' : 'Clear cache & refresh' }}
+            {{ refreshBusy ? 'Refreshing…' : 'Refresh server' }}
           </button>
           <button
             type="button"
             class="rounded-lg border border-surface-border px-3 py-1.5 text-xs hover:bg-slate-50 disabled:opacity-50 dark:hover:bg-slate-800"
-            :disabled="cacheBusy"
+            :disabled="cacheBusy || refreshBusy"
+            @click="clearServerCache(false)"
+          >
+            {{ cacheBusy ? 'Clearing…' : 'Clear central cache' }}
+          </button>
+          <button
+            type="button"
+            class="rounded-lg border border-surface-border px-3 py-1.5 text-xs hover:bg-slate-50 disabled:opacity-50 dark:hover:bg-slate-800"
+            :disabled="cacheBusy || refreshBusy"
             @click="clearServerCache(true)"
           >
             Clear cache + reload nginx

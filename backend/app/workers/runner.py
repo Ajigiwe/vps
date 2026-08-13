@@ -32,7 +32,8 @@ class WorkerRunner:
         logger.info("worker_started", concurrency=self._concurrency)
 
         workers = [asyncio.create_task(self._worker_loop(i)) for i in range(self._concurrency)]
-        await asyncio.gather(*workers)
+        ticker = asyncio.create_task(self._billing_ticker())
+        await asyncio.gather(*workers, ticker)
 
     async def shutdown(self) -> None:
         """Graceful shutdown signal."""
@@ -67,3 +68,16 @@ class WorkerRunner:
                     await self._queue.mark_failed(context.task_id, str(exc))
 
         logger.info("worker_loop_stopped", worker_id=worker_id)
+
+    async def _billing_ticker(self) -> None:
+        """Enqueue subscription reminders / grace / suspend once an hour."""
+        await asyncio.sleep(20)
+        while self._running:
+            try:
+                await self._queue.enqueue("subscription_tick", {})
+            except Exception:  # noqa: BLE001
+                logger.exception("billing_tick_enqueue_failed")
+            for _ in range(120):
+                if not self._running:
+                    return
+                await asyncio.sleep(30)

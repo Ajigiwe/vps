@@ -122,10 +122,14 @@ class Settings(BaseSettings):
 
     # Hosting control plane
     webmail_url: str | None = None
+    roundcube_public_html: str = "/var/lib/roundcube/public_html"
+    php_fpm_socket: str = "/run/php/php8.3-fpm.sock"
     certbot_binary: str | None = None
     server_public_ip: str | None = None
     hosting_allowed_paths: Annotated[list[str], NoDecode] = Field(default_factory=list)
     mail_config_dir: str = ".ifnotus/mail"
+    mail_vmail_dir: str = "/var/vmail"
+    mail_vmail_root: str = "/var/vmail"
     terminal_command_timeout: int = 30
     terminal_max_output_bytes: int = 65536
     file_upload_chunk_size: int = 2_097_152
@@ -136,13 +140,62 @@ class Settings(BaseSettings):
         default_factory=lambda: ["/srv/apps", "/var/www", "/opt"]
     )
     discovery_max_depth: int = 4
+    discovery_auto_register: bool = True
+    discovery_auto_register_exclude: Annotated[list[str], NoDecode] = Field(
+        default_factory=lambda: ["/srv/apps/ifnotus", "/var/www/ifnotus"]
+    )
     nginx_sites_enabled: str = "/etc/nginx/sites-enabled"
     nginx_sites_available: str = "/etc/nginx/sites-available"
     letsencrypt_live_dir: str = "/etc/letsencrypt/live"
 
+    # DeepSeek AI agent
+    deepseek_api_key: str | None = None
+    deepseek_base_url: str = "https://api.deepseek.com"
+    deepseek_model: str = "deepseek-chat"
+    ai_settings_path: str = ".ifnotus/settings/ai.json"
+    webmail_settings_path: str = ".ifnotus/settings/webmail.json"
+    webmail_support_whatsapp: str = "+233541069241"
+    webmail_brand_assets_dir: str = "assets/webmail"
+    roundcube_config_path: str = "/etc/roundcube/config.inc.php"
+    ai_memory_path: str = ".ifnotus/ai"
+    ai_allowed_paths: Annotated[list[str], NoDecode] = Field(
+        default_factory=lambda: ["/srv/apps", "/var/www", "/opt", "/etc/nginx", "/var/log"]
+    )
+
+    # Admin lockdown (empty = disabled). When set, panel API requires match.
+    # Comma-separated IPs/CIDRs and SHA-256 device fingerprints.
+    admin_allowed_ips: Annotated[list[str], NoDecode] = Field(default_factory=list)
+    admin_allowed_fingerprints: Annotated[list[str], NoDecode] = Field(default_factory=list)
+    admin_lockdown_enabled: bool = False
+    # Browser fingerprints drift (GPU/driver/browser updates), so they are an
+    # extra signal only. Opt in explicitly to make a mismatch blocking.
+    admin_require_fingerprint: bool = False
+
+    # Cutoffs for host-side log streams cleared from the panel
+    log_clear_state_path: str = ".ifnotus/state/log-clears.json"
+
+    # Host database management (SQLite / MySQL / PostgreSQL / MongoDB)
+    databases_registry_path: str = ".ifnotus/databases/registry.json"
+    databases_sqlite_root: str = "/srv/apps"
+    databases_backup_root: str = ".ifnotus/databases/backups"
+
     # Background workers
     worker_concurrency: int = 4
     worker_poll_interval_seconds: float = 1.0
+
+    # IFNOTUS product layer (customers / billing / provision)
+    paystack_secret_key: str | None = None
+    paystack_public_key: str | None = None
+    paystack_base_url: str = "https://api.paystack.co"
+    customer_portal_url: str = "https://ifnotus.space"
+    customer_environments_root: str = "/srv/apps/ifnotus-customers"
+    namecheap_api_user: str | None = None
+    namecheap_api_key: str | None = None
+    namecheap_client_ip: str | None = None
+    namecheap_api_url: str = "https://api.namecheap.com/xml.response"
+    subscription_grace_days: int = 7
+    subscription_terminate_after_days: int = 30
+    customer_isolation_mode: str = "docker"  # docker | filesystem
 
     @field_validator("cors_origins", mode="before")
     @classmethod
@@ -178,6 +231,27 @@ class Settings(BaseSettings):
         if isinstance(value, str):
             return [path.strip() for path in value.split(",") if path.strip()]
         return value if isinstance(value, list) else ["/srv/apps", "/var/www", "/opt"]
+
+    @field_validator("discovery_auto_register_exclude", mode="before")
+    @classmethod
+    def parse_auto_register_exclude(cls, value: str | list[str]) -> list[str]:
+        if isinstance(value, str):
+            return [path.strip() for path in value.split(",") if path.strip()]
+        return value if isinstance(value, list) else ["/srv/apps/ifnotus", "/var/www/ifnotus"]
+
+    @field_validator("ai_allowed_paths", mode="before")
+    @classmethod
+    def parse_ai_allowed_paths(cls, value: str | list[str]) -> list[str]:
+        if isinstance(value, str):
+            return [path.strip() for path in value.split(",") if path.strip()]
+        return value if isinstance(value, list) else ["/srv/apps", "/var/www", "/opt", "/etc/nginx", "/var/log"]
+
+    @field_validator("admin_allowed_ips", "admin_allowed_fingerprints", mode="before")
+    @classmethod
+    def parse_admin_allowlists(cls, value: str | list[str]) -> list[str]:
+        if isinstance(value, str):
+            return [item.strip() for item in value.split(",") if item.strip()]
+        return value if isinstance(value, list) else []
 
     @property
     def is_production(self) -> bool:

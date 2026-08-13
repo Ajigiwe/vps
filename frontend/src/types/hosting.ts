@@ -1,7 +1,30 @@
+export interface DomainRedirect {
+  id: string
+  domain_id: string
+  source_path: string
+  target_url: string
+  status_code: number
+  enabled: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface DomainDnsRecord {
+  id: string
+  domain_id: string
+  record_type: string
+  host: string
+  value: string
+  ttl: number
+  priority?: number | null
+  created_at: string
+  updated_at: string
+}
+
 export interface Domain {
   id: string
   name: string
-  domain_type: 'primary' | 'subdomain' | 'addon'
+  domain_type: 'primary' | 'subdomain' | 'addon' | 'alias' | 'redirect'
   parent_domain_id?: string | null
   application_id?: string | null
   document_root?: string | null
@@ -10,9 +33,15 @@ export interface Domain {
   dns_points_here?: boolean | null
   nginx_enabled?: boolean | null
   ssl_certificate_path?: string | null
+  force_https?: boolean
+  redirect_url?: string | null
+  nginx_site?: string | null
+  subdomain_label?: string | null
   notes?: string | null
   created_at: string
   updated_at: string
+  redirects?: DomainRedirect[]
+  dns_records?: DomainDnsRecord[]
 }
 
 export interface DomainListResponse {
@@ -24,6 +53,7 @@ export interface DomainListResponse {
   drift_count?: number
   listening_ports?: number[]
   available_ports?: number[]
+  server_ip?: string | null
 }
 
 export interface DnsCheckResponse {
@@ -33,8 +63,8 @@ export interface DnsCheckResponse {
   points_to_server: boolean | null
   server_ip: string | null
   message?: string | null
+  suggested_records?: Array<Record<string, unknown>>
 }
-
 export interface SslCertificate {
   domain_id?: string | null
   domain: string
@@ -114,6 +144,18 @@ export interface MailDomainResponse {
   aliases: MailAlias[]
   webmail_url?: string | null
   mail_config_path?: string | null
+  auth?: {
+    ready?: boolean
+    spf_ok?: boolean
+    dkim_dns_ok?: boolean
+    mx_ok?: boolean
+    dkim_signing?: boolean
+    messages?: string[]
+    dns?: Array<{ record_type: string; host: string; value: string; ttl?: number; priority?: number | null }>
+    tunnel?: { submission?: string; milter?: string; sender_binding?: string }
+    server_ip?: string
+    mail_hostname?: string
+  } | null
 }
 
 export interface FileRoot {

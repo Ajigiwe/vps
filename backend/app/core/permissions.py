@@ -38,6 +38,8 @@ class Permission(StrEnum):
     MAIL_READ = "mail:read"
     MAIL_WRITE = "mail:write"
     TERMINAL_EXECUTE = "terminal:execute"
+    DATABASES_READ = "databases:read"
+    DATABASES_WRITE = "databases:write"
 
     # Monitoring
     MONITORING_READ = "monitoring:read"
@@ -54,6 +56,7 @@ class Role(StrEnum):
     ADMIN = "admin"
     OPERATOR = "operator"
     VIEWER = "viewer"
+    CUSTOMER = "customer"
 
 
 ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
@@ -84,6 +87,8 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
             Permission.MAIL_WRITE,
             Permission.EMAIL_READ,
             Permission.EMAIL_WRITE,
+            Permission.DATABASES_READ,
+            Permission.DATABASES_WRITE,
         }
     ),
     Role.VIEWER: frozenset(
@@ -98,6 +103,25 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
             Permission.SSL_READ,
             Permission.FILES_READ,
             Permission.MAIL_READ,
+            Permission.DATABASES_READ,
+        }
+    ),
+    # Customer panel — scoped to their environments in services, not host-wide.
+    Role.CUSTOMER: frozenset(
+        {
+            Permission.APPS_READ,
+            Permission.APPS_WRITE,
+            Permission.DOMAINS_READ,
+            Permission.DOMAINS_WRITE,
+            Permission.SSL_READ,
+            Permission.SSL_WRITE,
+            Permission.FILES_READ,
+            Permission.FILES_WRITE,
+            Permission.MAIL_READ,
+            Permission.MAIL_WRITE,
+            Permission.DATABASES_READ,
+            Permission.DATABASES_WRITE,
+            Permission.MONITORING_READ,
         }
     ),
 }

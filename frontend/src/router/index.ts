@@ -51,14 +51,26 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, permission: 'domains:read' },
   },
   {
+    path: '/databases',
+    name: 'databases',
+    component: () => import('@/views/DatabasesView.vue'),
+    meta: { requiresAuth: true, permission: 'databases:read' },
+  },
+  {
+    path: '/databases/studio',
+    name: 'database-studio',
+    component: () => import('@/views/DatabaseStudioView.vue'),
+    meta: { requiresAuth: true, permission: 'databases:read' },
+  },
+  {
     path: '/ssl',
     name: 'ssl',
     component: () => import('@/views/SslView.vue'),
     meta: { requiresAuth: true, permission: 'ssl:read' },
   },
   {
-    path: '/mail',
-    name: 'mail',
+    path: '/admin/mail',
+    name: 'mail-admin',
     component: () => import('@/views/MailView.vue'),
     meta: { requiresAuth: true, permission: 'mail:read' },
   },
@@ -69,10 +81,22 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, permission: 'files:write' },
   },
   {
+    path: '/files/edit',
+    name: 'file-editor',
+    component: () => import('@/views/FileEditorView.vue'),
+    meta: { requiresAuth: true, permission: 'files:read' },
+  },
+  {
     path: '/files',
     name: 'files',
     component: () => import('@/views/FilesView.vue'),
     meta: { requiresAuth: true, permission: 'files:read' },
+  },
+  {
+    path: '/terminal/full',
+    name: 'terminal-full',
+    component: () => import('@/views/TerminalFullscreenView.vue'),
+    meta: { requiresAuth: true, permission: 'terminal:execute' },
   },
   {
     path: '/terminal',
@@ -81,10 +105,55 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, permission: 'terminal:execute' },
   },
   {
+    path: '/security',
+    name: 'security',
+    component: () => import('@/views/SecurityView.vue'),
+    meta: { requiresAuth: true, permission: 'system:admin' },
+  },
+  {
+    path: '/servers',
+    name: 'servers',
+    component: () => import('@/views/ServersView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/settings',
     name: 'settings',
     component: () => import('@/views/SettingsView.vue'),
     meta: { requiresAuth: true },
+  },
+  // IFNOTUS customer portal (product layer)
+  {
+    path: '/portal',
+    name: 'portal-plans',
+    component: () => import('@/views/portal/PortalPlansView.vue'),
+    meta: { guestOnly: false },
+  },
+  {
+    path: '/portal/signup',
+    name: 'portal-signup',
+    component: () => import('@/views/portal/PortalSignupView.vue'),
+  },
+  {
+    path: '/portal/login',
+    name: 'portal-login',
+    component: () => import('@/views/portal/PortalLoginView.vue'),
+  },
+  {
+    path: '/portal/dashboard',
+    name: 'portal-dashboard',
+    component: () => import('@/views/portal/PortalDashboardView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/billing/callback',
+    name: 'billing-callback',
+    component: () => import('@/views/portal/PortalBillingView.vue'),
+  },
+  {
+    path: '/billing/demo-pay',
+    name: 'billing-demo',
+    component: () => import('@/views/portal/PortalBillingView.vue'),
   },
 ]
 
@@ -99,7 +168,15 @@ router.beforeEach(async (to) => {
     return { name: 'login', query: { redirect: to.fullPath } }
   }
   if (to.meta.guestOnly && token) {
+    if (localStorage.getItem('ifnotus_portal') === '1') {
+      return { name: 'portal-dashboard' }
+    }
     return { name: 'dashboard' }
+  }
+
+  // Customer portal users land on portal dashboard, not staff WHM
+  if (token && to.name === 'dashboard' && localStorage.getItem('ifnotus_portal') === '1') {
+    return { name: 'portal-dashboard' }
   }
 
   if (token && to.meta.requiresAuth) {

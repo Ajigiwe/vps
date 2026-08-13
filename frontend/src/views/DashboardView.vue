@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import Card from '@/components/ui/Card.vue'
 import ErrorState from '@/components/ui/ErrorState.vue'
@@ -13,14 +13,48 @@ import ResourceChart from '@/components/dashboard/ResourceChart.vue'
 import ActivityTimeline from '@/components/dashboard/ActivityTimeline.vue'
 import DeploymentList from '@/components/dashboard/DeploymentList.vue'
 import QuickActions from '@/components/dashboard/QuickActions.vue'
+import DashboardAiFab from '@/components/ai/DashboardAiFab.vue'
+import { serverApi } from '@/api'
+import { getApiErrorMessage } from '@/lib/apiError'
 import { useDashboard } from '@/composables/useDashboard'
 import { IconServer } from '@/components/icons'
 
-const { data, loading, refreshing, error, runningServices, activeApplications, refresh } =
+const { data, loading, refreshing, error, extrasError, runningServices, activeApplications, refresh } =
   useDashboard()
 
 const primaryStats = computed(() => data.value?.stats.slice(0, 4) ?? [])
 const secondaryStats = computed(() => data.value?.stats.slice(4) ?? [])
+
+const serverBusy = ref(false)
+const serverMessage = ref<{ ok: boolean; text: string } | null>(null)
+
+async function refreshServer() {
+  serverBusy.value = true
+  serverMessage.value = null
+  try {
+    const { data: result } = await serverApi.refresh(true)
+    serverMessage.value = { ok: result.success, text: result.message }
+    await refresh()
+  } catch (e) {
+    serverMessage.value = { ok: false, text: getApiErrorMessage(e, 'Server refresh failed') }
+  } finally {
+    serverBusy.value = false
+  }
+}
+
+async function clearCentralCache() {
+  serverBusy.value = true
+  serverMessage.value = null
+  try {
+    const { data: result } = await serverApi.clearCache(false)
+    serverMessage.value = { ok: result.success, text: result.message }
+    await refresh()
+  } catch (e) {
+    serverMessage.value = { ok: false, text: getApiErrorMessage(e, 'Cache clear failed') }
+  } finally {
+    serverBusy.value = false
+  }
+}
 </script>
 
 <template>
@@ -66,49 +100,73 @@ const secondaryStats = computed(() => data.value?.stats.slice(4) ?? [])
 
       <!-- VPS inventory -->
       <section
-        v-if="data?.inventory"
         class="dashboard-grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7"
         aria-label="VPS inventory"
       >
         <Card padding="sm">
           <p class="text-xs text-surface-muted">Registered apps</p>
-          <p class="text-xl font-semibold">{{ data.inventory.registered_apps }}</p>
+          <p class="text-xl font-semibold">{{ data?.inventory?.registered_apps ?? '—' }}</p>
         </Card>
         <Card padding="sm">
           <p class="text-xs text-surface-muted">Discovered apps</p>
-          <p class="text-xl font-semibold text-sky-600">{{ data.inventory.discovered_apps }}</p>
+          <p class="text-xl font-semibold text-sky-600">{{ data?.inventory?.discovered_apps ?? '—' }}</p>
         </Card>
         <Card padding="sm">
           <p class="text-xs text-surface-muted">Unregistered</p>
-          <p class="text-xl font-semibold text-amber-600">{{ data.inventory.unregistered_discovered_apps }}</p>
+          <p class="text-xl font-semibold text-amber-600">{{ data?.inventory?.unregistered_discovered_apps ?? '—' }}</p>
         </Card>
         <Card padding="sm">
           <p class="text-xs text-surface-muted">Domain drift</p>
-          <p class="text-xl font-semibold text-amber-600">{{ data.inventory.domains_with_drift }}</p>
+          <p class="text-xl font-semibold text-amber-600">{{ data?.inventory?.domains_with_drift ?? '—' }}</p>
         </Card>
         <Card padding="sm">
           <p class="text-xs text-surface-muted">Certs expiring</p>
-          <p class="text-xl font-semibold text-amber-600">{{ data.inventory.certificates_expiring }}</p>
+          <p class="text-xl font-semibold text-amber-600">{{ data?.inventory?.certificates_expiring ?? '—' }}</p>
         </Card>
         <Card padding="sm">
           <p class="text-xs text-surface-muted">Certs missing</p>
-          <p class="text-xl font-semibold text-red-600">{{ data.inventory.certificates_missing }}</p>
+          <p class="text-xl font-semibold text-red-600">{{ data?.inventory?.certificates_missing ?? '—' }}</p>
         </Card>
         <Card padding="sm">
           <p class="text-xs text-surface-muted">Runtime issues</p>
-          <p class="text-xl font-semibold">{{ data.inventory.runtime_issues }}</p>
+          <p class="text-xl font-semibold">{{ data?.inventory?.runtime_issues ?? '—' }}</p>
         </Card>
       </section>
 
       <section aria-label="Quick actions">
         <Card title="Quick Actions" padding="sm" class="min-w-0 overflow-hidden">
+          <div class="mb-3 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              class="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+              :disabled="serverBusy"
+              @click="refreshServer"
+            >
+              {{ serverBusy ? 'Working…' : 'Refresh server' }}
+            </button>
+            <button
+              type="button"
+              class="rounded-lg border border-surface-border px-3 py-1.5 text-xs hover:bg-slate-50 disabled:opacity-50 dark:hover:bg-slate-800"
+              :disabled="serverBusy"
+              @click="clearCentralCache"
+            >
+              Clear central cache
+            </button>
+            <p
+              v-if="serverMessage"
+              class="text-xs"
+              :class="serverMessage.ok ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-600'"
+            >
+              {{ serverMessage.text }}
+            </p>
+          </div>
           <QuickActions :refreshing="refreshing" @refresh="refresh" />
         </Card>
       </section>
 
       <!-- Charts -->
       <section class="dashboard-grid lg:grid-cols-3" aria-label="Resource utilization charts">
-        <Card title="CPU Usage" subtitle="Live · updates every 5s" class="animate-slide-up">
+        <Card title="CPU Usage" subtitle="Resource utilization" class="animate-slide-up">
           <ResourceChart
             title="CPU"
             :chart="data?.charts.cpu ?? { categories: [], series: [] }"
@@ -116,7 +174,7 @@ const secondaryStats = computed(() => data.value?.stats.slice(4) ?? [])
             unit="%"
           />
         </Card>
-        <Card title="Memory Usage" subtitle="Live · updates every 5s" class="animate-slide-up">
+        <Card title="Memory Usage" subtitle="Resource utilization" class="animate-slide-up">
           <ResourceChart
             title="Memory"
             :chart="data?.charts.memory ?? { categories: [], series: [] }"
@@ -124,7 +182,7 @@ const secondaryStats = computed(() => data.value?.stats.slice(4) ?? [])
             unit="%"
           />
         </Card>
-        <Card title="Network Throughput" subtitle="Live · updates every 5s" class="animate-slide-up">
+        <Card title="Network Throughput" subtitle="Inbound / outbound" class="animate-slide-up">
           <template #actions>
             <div class="text-right text-xs text-surface-muted">
               <p>↓ {{ data?.networkThroughput.in }}</p>
@@ -167,7 +225,10 @@ const secondaryStats = computed(() => data.value?.stats.slice(4) ?? [])
           class="min-w-0"
         >
           <div class="dashboard-side-panel">
-            <div class="dashboard-side-panel-scroll space-y-2">
+            <p v-if="!data?.services.length && !loading" class="py-4 text-sm text-surface-muted">
+              No managed services reported by supervisor/systemd collectors.
+            </p>
+            <div v-else class="dashboard-side-panel-scroll space-y-2">
               <ServiceStatusCard
                 v-for="service in data?.services ?? []"
                 :key="service.id"
@@ -187,9 +248,12 @@ const secondaryStats = computed(() => data.value?.stats.slice(4) ?? [])
         <Card
           class="xl:col-span-2"
           title="Active Applications"
-          :subtitle="`${activeApplications} running`"
+          :subtitle="`${activeApplications} of ${data?.applications.length ?? 0} running`"
         >
-          <div class="grid gap-2 sm:grid-cols-2">
+          <p v-if="!data?.applications.length && !loading" class="py-4 text-sm text-surface-muted">
+            No registered applications found. Add YAML definitions under applications/ or register discovered apps.
+          </p>
+          <div v-else class="grid gap-2 sm:grid-cols-2">
             <ApplicationStatusCard
               v-for="app in data?.applications ?? []"
               :key="app.id"
@@ -198,14 +262,15 @@ const secondaryStats = computed(() => data.value?.stats.slice(4) ?? [])
           </div>
         </Card>
 
-        <Card class="xl:col-span-3" title="Recent Alerts" subtitle="Last 24 hours">
-          <AlertList :alerts="data?.alerts ?? []" :loading="loading" :max-items="5" />
+        <Card class="xl:col-span-3" title="Recent Alerts" subtitle="Active now">
+          <AlertList :alerts="data?.alerts ?? []" :loading="loading" :max-items="8" />
         </Card>
       </section>
 
       <!-- Deployments + Activity -->
       <section class="dashboard-grid min-w-0 items-start xl:grid-cols-2" aria-label="Deployments and activity">
         <Card title="Recent Deployments" class="min-w-0 overflow-hidden">
+          <p v-if="extrasError" class="mb-2 text-xs text-amber-600 dark:text-amber-400">{{ extrasError }}</p>
           <div class="dashboard-side-panel">
             <div class="dashboard-side-panel-scroll">
               <DeploymentList :deployments="data?.deployments ?? []" :loading="loading" />
@@ -233,5 +298,7 @@ const secondaryStats = computed(() => data.value?.stats.slice(4) ?? [])
         </span>
       </section>
     </div>
+
+    <DashboardAiFab />
   </DashboardLayout>
 </template>

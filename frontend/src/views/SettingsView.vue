@@ -4,14 +4,24 @@ import { useRouter } from 'vue-router'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import Card from '@/components/ui/Card.vue'
 import Badge from '@/components/ui/Badge.vue'
-import { healthApi, monitoringApi, securityApi, serverApi } from '@/api'
+import { healthApi, monitoringApi, serverApi, aiApi, mailApi } from '@/api'
 import { REALTIME_POLL_MS } from '@/config/polling'
 import { useAuthStore } from '@/stores/auth'
 import { usePolling } from '@/composables/usePolling'
 import { Permission } from '@/lib/permissions'
 import { usePermissions } from '@/composables/usePermissions'
+import Skeleton from '@/components/ui/Skeleton.vue'
+import { getApiErrorMessage } from '@/lib/apiError'
 import type { IntegrationsResponse, PortsResponse, ReadinessResponse } from '@/types/dashboard'
-import type { AccessAttemptEntry, IpBlacklistEntry } from '@/types/security'
+import type { AiSettings } from '@/types/ai'
+
+interface WebmailSettings {
+  support_whatsapp: string
+  support_url: string
+  product_name: string
+  auto_detect_domains: boolean
+  updated_at?: string | null
+}
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -35,10 +45,22 @@ const { data: integrations, refresh: refreshIntegrations } = usePolling<Integrat
   { requiresAuth: true },
 )
 
-const blacklist = ref<IpBlacklistEntry[]>([])
-const attempts = ref<AccessAttemptEntry[]>([])
-const securityMessage = ref<string | null>(null)
-const securityLoading = ref(false)
+const aiSettings = ref<AiSettings | null>(null)
+const aiLoading = ref(false)
+const aiSaving = ref(false)
+const aiKey = ref('')
+const aiModel = ref('deepseek-chat')
+const aiMessage = ref<{ ok: boolean; text: string } | null>(null)
+const canManageAi = computed(() => can(Permission.SYSTEM_ADMIN) || !!auth.user?.is_superuser)
+
+const webmailSettings = ref<WebmailSettings | null>(null)
+const webmailLoading = ref(false)
+const webmailSaving = ref(false)
+const webmailWhatsapp = ref('+233541069241')
+const webmailProduct = ref('IFNOTUS Webmail')
+const webmailAutoDetect = ref(true)
+const webmailMessage = ref<{ ok: boolean; text: string } | null>(null)
+const canManageWebmail = computed(() => can(Permission.SYSTEM_ADMIN) || !!auth.user?.is_superuser)
 
 const integrationEntries = computed(() => {
   if (!integrations.value) return []
@@ -74,32 +96,106 @@ async function loadProfile() {
   }
 }
 
-async function loadSecurity() {
-  if (!canManageSecurity.value) return
-  securityLoading.value = true
+async function loadAiSettings() {
+  if (!canManageAi.value) return
+  aiLoading.value = true
+  aiMessage.value = null
   try {
-    const [b, a] = await Promise.all([
-      securityApi.blacklist(true),
-      securityApi.attempts(40),
-    ])
-    blacklist.value = b.data.entries
-    attempts.value = a.data.attempts
-  } catch {
-    blacklist.value = []
-    attempts.value = []
+    const { data } = await aiApi.getSettings()
+    aiSettings.value = data
+    aiModel.value = data.model || 'deepseek-chat'
+  } catch (e) {
+    aiMessage.value = { ok: false, text: getApiErrorMessage(e, 'Failed to load AI settings') }
   } finally {
-    securityLoading.value = false
+    aiLoading.value = false
   }
 }
 
-async function unlockIp(entry: IpBlacklistEntry) {
-  securityMessage.value = null
+async function saveAiSettings() {
+  aiSaving.value = true
+  aiMessage.value = null
   try {
-    const { data } = await securityApi.unlock(entry.id, 'Unlocked from Settings')
-    securityMessage.value = data.message
-    await loadSecurity()
+    const body: { api_key?: string; model?: string; clear?: boolean } = {
+      model: aiModel.value.trim() || 'deepseek-chat',
+    }
+    if (aiKey.value.trim()) body.api_key = aiKey.value.trim()
+    const { data } = await aiApi.updateSettings(body)
+    aiSettings.value = data
+    aiKey.value = ''
+    aiMessage.value = { ok: true, text: 'SNR Dev settings saved.' }
   } catch (e) {
-    securityMessage.value = e instanceof Error ? e.message : 'Unlock failed'
+    aiMessage.value = { ok: false, text: getApiErrorMessage(e, 'Failed to save AI settings') }
+  } finally {
+    aiSaving.value = false
+  }
+}
+
+async function clearAiKey() {
+  if (!confirm('Remove the stored SNR Dev API key?')) return
+  aiSaving.value = true
+  try {
+    const { data } = await aiApi.updateSettings({ clear: true })
+    aiSettings.value = data
+    aiKey.value = ''
+    aiMessage.value = { ok: true, text: 'API key cleared.' }
+  } catch (e) {
+    aiMessage.value = { ok: false, text: getApiErrorMessage(e, 'Failed to clear API key') }
+  } finally {
+    aiSaving.value = false
+  }
+}
+
+async function loadWebmailSettings() {
+  if (!canManageWebmail.value) return
+  webmailLoading.value = true
+  webmailMessage.value = null
+  try {
+    const { data } = await mailApi.getSettings()
+    webmailSettings.value = data
+    webmailWhatsapp.value = data.support_whatsapp || '+233541069241'
+    webmailProduct.value = data.product_name || 'IFNOTUS Webmail'
+    webmailAutoDetect.value = data.auto_detect_domains !== false
+  } catch (e) {
+    webmailMessage.value = { ok: false, text: getApiErrorMessage(e, 'Failed to load webmail settings') }
+  } finally {
+    webmailLoading.value = false
+  }
+}
+
+async function saveWebmailSettings() {
+  webmailSaving.value = true
+  webmailMessage.value = null
+  try {
+    const { data } = await mailApi.updateSettings({
+      support_whatsapp: webmailWhatsapp.value.trim(),
+      product_name: webmailProduct.value.trim() || 'IFNOTUS Webmail',
+      auto_detect_domains: webmailAutoDetect.value,
+    })
+    webmailSettings.value = data
+    webmailMessage.value = {
+      ok: true,
+      text: `Saved. Support opens WhatsApp: ${data.support_url}`,
+    }
+  } catch (e) {
+    webmailMessage.value = { ok: false, text: getApiErrorMessage(e, 'Failed to save webmail settings') }
+  } finally {
+    webmailSaving.value = false
+  }
+}
+
+async function syncWebmailDomains() {
+  webmailSaving.value = true
+  webmailMessage.value = null
+  try {
+    const { data } = await mailApi.syncDomains()
+    webmailMessage.value = {
+      ok: data.success,
+      text: data.message || 'Webmail domain sync finished.',
+    }
+  } catch (e) {
+    webmailMessage.value = { ok: false, text: getApiErrorMessage(e, 'Domain sync failed') }
+  } finally {
+    webmailSaving.value = false
   }
 }
 
@@ -113,7 +209,8 @@ function refreshAll() {
   refreshPorts()
   refreshIntegrations()
   loadProfile()
-  loadSecurity()
+  loadAiSettings()
+  loadWebmailSettings()
 }
 
 onMounted(refreshAll)
@@ -226,6 +323,158 @@ onMounted(refreshAll)
         </div>
       </Card>
 
+      <Card title="SNR Dev" subtitle="Server companion for Files, Terminal & Editor">
+        <div v-if="!canManageAi" class="text-sm text-surface-muted">
+          Only superadmins can manage the SNR Dev API key.
+        </div>
+        <div v-else-if="aiLoading" class="space-y-3">
+          <Skeleton height="2.5rem" />
+          <Skeleton height="2.5rem" />
+          <Skeleton height="2.5rem" width="40%" />
+        </div>
+        <div v-else class="space-y-4">
+          <div class="flex flex-wrap items-center gap-2 text-sm">
+            <Badge :variant="aiSettings?.configured ? 'success' : 'warning'" dot size="sm">
+              {{ aiSettings?.configured ? 'Configured' : 'Not configured' }}
+            </Badge>
+            <span v-if="aiSettings?.api_key_masked" class="font-mono text-xs text-surface-muted">
+              {{ aiSettings.api_key_masked }}
+            </span>
+          </div>
+
+          <label class="block text-sm">
+            <span class="text-surface-muted">API key</span>
+            <input
+              v-model="aiKey"
+              type="password"
+              autocomplete="off"
+              class="mt-1 w-full rounded-lg border border-surface-border bg-transparent px-3 py-2 font-mono text-sm"
+              :placeholder="aiSettings?.configured ? '•••• leave blank to keep current key' : 'sk-…'"
+            />
+          </label>
+
+          <label class="block text-sm">
+            <span class="text-surface-muted">Model</span>
+            <input
+              v-model="aiModel"
+              class="mt-1 w-full rounded-lg border border-surface-border bg-transparent px-3 py-2 text-sm"
+              placeholder="chat model id"
+            />
+          </label>
+
+          <p
+            v-if="aiMessage"
+            class="text-sm"
+            :class="aiMessage.ok ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-600'"
+          >
+            {{ aiMessage.text }}
+          </p>
+
+          <div class="flex flex-wrap gap-2">
+            <button
+              type="button"
+              class="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+              :disabled="aiSaving"
+              @click="saveAiSettings"
+            >
+              {{ aiSaving ? 'Saving…' : 'Save' }}
+            </button>
+            <button
+              v-if="aiSettings?.configured"
+              type="button"
+              class="rounded-lg border border-surface-border px-4 py-2 text-sm disabled:opacity-50"
+              :disabled="aiSaving"
+              @click="clearAiKey"
+            >
+              Clear key
+            </button>
+          </div>
+        </div>
+      </Card>
+
+      <Card
+        title="Webmail"
+        subtitle="Support WhatsApp + auto-detect domains for /mail on every site"
+      >
+        <div v-if="!canManageWebmail" class="text-sm text-surface-muted">
+          Only administrators can manage webmail settings.
+        </div>
+        <div v-else-if="webmailLoading" class="space-y-3">
+          <Skeleton height="2.5rem" />
+          <Skeleton height="2.5rem" />
+        </div>
+        <div v-else class="space-y-4">
+          <p class="text-sm text-surface-muted">
+            The Support link in Roundcube opens WhatsApp chat. New nginx domains get
+            <span class="font-mono">/mail</span> automatically (same idea as app/database discovery).
+          </p>
+
+          <label class="block text-sm">
+            <span class="text-surface-muted">Support WhatsApp number</span>
+            <input
+              v-model="webmailWhatsapp"
+              type="tel"
+              class="mt-1 w-full rounded-lg border border-surface-border bg-transparent px-3 py-2 font-mono text-sm"
+              placeholder="+233541069241"
+            />
+          </label>
+
+          <label class="block text-sm">
+            <span class="text-surface-muted">Product name</span>
+            <input
+              v-model="webmailProduct"
+              class="mt-1 w-full rounded-lg border border-surface-border bg-transparent px-3 py-2 text-sm"
+              placeholder="IFNOTUS Webmail"
+            />
+          </label>
+
+          <label class="flex items-center gap-2 text-sm">
+            <input v-model="webmailAutoDetect" type="checkbox" class="rounded border-surface-border" />
+            <span>Auto-detect new domains and expose <span class="font-mono">/mail</span></span>
+          </label>
+
+          <p
+            v-if="webmailSettings?.support_url"
+            class="text-xs text-surface-muted"
+          >
+            Preview:
+            <a
+              :href="webmailSettings.support_url"
+              target="_blank"
+              rel="noopener"
+              class="font-mono text-brand-700 underline dark:text-brand-300"
+            >{{ webmailSettings.support_url }}</a>
+          </p>
+
+          <p
+            v-if="webmailMessage"
+            class="text-sm"
+            :class="webmailMessage.ok ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-600'"
+          >
+            {{ webmailMessage.text }}
+          </p>
+
+          <div class="flex flex-wrap gap-2">
+            <button
+              type="button"
+              class="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+              :disabled="webmailSaving"
+              @click="saveWebmailSettings"
+            >
+              {{ webmailSaving ? 'Saving…' : 'Save webmail' }}
+            </button>
+            <button
+              type="button"
+              class="rounded-lg border border-surface-border px-4 py-2 text-sm disabled:opacity-50"
+              :disabled="webmailSaving"
+              @click="syncWebmailDomains"
+            >
+              Sync /mail now
+            </button>
+          </div>
+        </div>
+      </Card>
+
       <Card title="Integrations" subtitle="Live collector status">
         <div class="space-y-2">
           <div
@@ -259,83 +508,18 @@ onMounted(refreshAll)
       <Card
         v-if="canManageSecurity"
         title="Access security"
-        subtitle="IP blacklist and access traces"
+        subtitle="Firewall, login logs, and action audit"
       >
-        <p v-if="securityMessage" class="mb-3 text-sm text-emerald-700 dark:text-emerald-300">
-          {{ securityMessage }}
+        <p class="mb-3 text-sm text-surface-muted">
+          Manage IP allow/deny networks, login traces (web / CLI / SSH), action audit, and action kill-switches.
         </p>
-
-        <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-surface-muted">
-          Blacklisted IPs
-        </h3>
-        <div v-if="securityLoading" class="text-sm text-surface-muted">Loading…</div>
-        <div v-else-if="!blacklist.length" class="mb-4 text-sm text-surface-muted">
-          No active IP blocks.
-        </div>
-        <div v-else class="mb-5 max-h-48 space-y-2 overflow-y-auto">
-          <div
-            v-for="entry in blacklist"
-            :key="entry.id"
-            class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-surface-border px-3 py-2 text-sm"
-          >
-            <div>
-              <p class="font-mono font-medium">{{ entry.ip_address }}</p>
-              <p class="text-xs text-surface-muted">
-                {{ entry.reason }} · {{ entry.failed_attempt_count }} fails ·
-                {{ new Date(entry.blocked_at).toLocaleString() }}
-              </p>
-              <p v-if="entry.last_device_fingerprint" class="truncate text-[10px] text-surface-muted">
-                fp {{ entry.last_device_fingerprint.slice(0, 16) }}…
-              </p>
-            </div>
-            <button
-              type="button"
-              class="rounded-lg border border-surface-border px-2.5 py-1 text-xs hover:bg-slate-50 dark:hover:bg-slate-800"
-              @click="unlockIp(entry)"
-            >
-              Unlock IP
-            </button>
-          </div>
-        </div>
-
-        <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-surface-muted">
-          Recent access attempts
-        </h3>
-        <div class="max-h-56 overflow-auto rounded-lg border border-surface-border">
-          <table class="w-full text-left text-xs">
-            <thead class="sticky top-0 bg-surface-raised text-surface-muted">
-              <tr>
-                <th class="px-2 py-1.5">When</th>
-                <th class="px-2 py-1.5">IP</th>
-                <th class="px-2 py-1.5">Event</th>
-                <th class="px-2 py-1.5">Identity</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="row in attempts"
-                :key="row.id"
-                class="border-t border-surface-border"
-              >
-                <td class="px-2 py-1.5 whitespace-nowrap">
-                  {{ new Date(row.attempted_at).toLocaleString() }}
-                </td>
-                <td class="px-2 py-1.5 font-mono">{{ row.ip_address }}</td>
-                <td class="px-2 py-1.5">
-                  <Badge
-                    :variant="row.success ? 'success' : row.event_type === 'access_probe' ? 'neutral' : 'warning'"
-                    size="sm"
-                  >
-                    {{ row.event_type }}
-                  </Badge>
-                </td>
-                <td class="max-w-[8rem] truncate px-2 py-1.5">
-                  {{ row.username_or_email || '—' }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <button
+          type="button"
+          class="rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700"
+          @click="router.push({ name: 'security' })"
+        >
+          Open Security & Audit
+        </button>
       </Card>
 
       <Card title="Monitored Ports" subtitle="Services IFNOTUS tracks for outages">

@@ -11,6 +11,23 @@ export interface TokenResponse {
   expires_in: number
 }
 
+export interface LoginResponse {
+  status: 'ok' | 'challenge_required'
+  access_token?: string | null
+  refresh_token?: string | null
+  token_type?: string
+  expires_in?: number | null
+  challenge_id?: string | null
+  ip_address?: string | null
+  message?: string | null
+}
+
+export interface VerifyDeviceRequest {
+  challenge_id: string
+  code: string
+  device_fingerprint?: string
+}
+
 export interface User {
   id: string
   email: string

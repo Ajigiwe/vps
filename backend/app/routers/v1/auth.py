@@ -3,7 +3,15 @@
 from fastapi import APIRouter, Depends, Request
 
 from app.api.deps import AccessControlDep, CurrentUser, DbSession, get_auth_service
-from app.schemas.auth import AccessProbeRequest, LoginRequest, RefreshTokenRequest, TokenResponse
+from app.schemas.auth import (
+    AccessProbeRequest,
+    ConfirmPasswordRequest,
+    LoginRequest,
+    LoginResponse,
+    RefreshTokenRequest,
+    TokenResponse,
+    VerifyDeviceRequest,
+)
 from app.schemas.common import MessageResponse
 from app.schemas.user import UserResponse
 from app.services.access_control import AccessContext
@@ -25,23 +33,53 @@ def _client_ip(request: Request) -> str:
 
 
 def _access_context(request: Request, fingerprint: str | None = None) -> AccessContext:
+    from app.services.security_actions import detect_source
+
+    ua = request.headers.get("user-agent")
     return AccessContext(
         ip_address=_client_ip(request),
-        user_agent=request.headers.get("user-agent"),
+        user_agent=ua,
         device_fingerprint=fingerprint or request.headers.get("x-device-fingerprint"),
         request_id=request.headers.get("x-request-id"),
+        source=detect_source(ua),
     )
 
 
-@router.post("/login", response_model=TokenResponse, summary="Authenticate user")
+@router.post("/login", response_model=LoginResponse, summary="Authenticate user")
 async def login(
     body: LoginRequest,
     request: Request,
     auth_service: AuthService = Depends(get_auth_service),
-) -> TokenResponse:
-    """Exchange credentials for JWT access and refresh tokens."""
+) -> LoginResponse:
+    """Exchange credentials for tokens, or return an IP approval challenge."""
     ctx = _access_context(request, body.device_fingerprint)
     return await auth_service.login(body, ctx)
+
+
+@router.post(
+    "/verify-device",
+    response_model=LoginResponse,
+    summary="Verify new-IP login challenge",
+)
+async def verify_device(
+    body: VerifyDeviceRequest,
+    request: Request,
+    auth_service: AuthService = Depends(get_auth_service),
+) -> LoginResponse:
+    """Complete login after entering the one-time code from `ifnotus-unlock pending`."""
+    ctx = _access_context(request, body.device_fingerprint)
+    return await auth_service.verify_device(body, ctx)
+
+
+@router.post("/confirm-password", response_model=MessageResponse, summary="Confirm dashboard password")
+async def confirm_password(
+    body: ConfirmPasswordRequest,
+    user: CurrentUser,
+    auth_service: AuthService = Depends(get_auth_service),
+) -> MessageResponse:
+    """Re-verify the signed-in user's password for sensitive areas."""
+    await auth_service.confirm_password(user, body.password)
+    return MessageResponse(message="Password confirmed.")
 
 
 @router.post("/probe", response_model=MessageResponse, summary="Record anonymous access probe")

@@ -31,10 +31,12 @@ const titles: Record<string, string> = {
   operations: 'Operations',
   domains: 'Domains',
   ssl: 'SSL',
-  mail: 'Mail',
+  'mail-admin': 'Mail Administration',
   files: 'File Manager',
   'files-upload': 'Upload Files',
   terminal: 'Terminal',
+  'terminal-full': 'Terminal',
+  security: 'Security & Audit',
   servers: 'Servers',
   settings: 'Settings',
 }
