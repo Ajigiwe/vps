@@ -18,7 +18,7 @@ runtime:
   process_match: "vite.*5173|node.*vite"
 
 nginx:
-  server_name: localhost
+  server_name: manage.podiumclass.online
 
 git:
   repository: ..

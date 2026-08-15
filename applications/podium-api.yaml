@@ -18,13 +18,13 @@ runtime:
   process_match: "uvicorn.*app.main|uvicorn.*8000"
 
 nginx:
-  server_name: localhost
+  server_name: manage.podiumclass.online
 
 git:
   repository: ..
 
 ssl:
-  domain: localhost
+  domain: manage.podiumclass.online
 
 deployment:
   enabled: false

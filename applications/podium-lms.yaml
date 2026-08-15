@@ -1,0 +1,38 @@
+id: podium-lms
+name: Podium LMS
+type: nodejs
+environment: production
+enabled: true
+description: Podium LMS web application
+version: "1.0.0"
+tags:
+  - product
+  - lms
+
+paths:
+  root: /opt/podium
+  logs: []
+
+runtime:
+  process_match: "next-server|next start"
+
+nginx:
+  server_name: podiumclass.online
+
+git:
+  repository: null
+
+ssl:
+  domain: podiumclass.online
+
+deployment:
+  enabled: false
+
+backup:
+  enabled: false
+
+domains:
+  enabled: false
+
+email:
+  enabled: false
