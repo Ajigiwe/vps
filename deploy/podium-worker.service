@@ -5,14 +5,11 @@ Wants=docker.service
 
 [Service]
 Type=simple
-User=podium
-Group=podium
 WorkingDirectory=/srv/apps/podium/backend
 EnvironmentFile=/srv/apps/podium/backend/.env
 ExecStart=/srv/apps/podium/backend/.venv/bin/python -m app.workers.cli
 Restart=always
 RestartSec=3
-SupplementaryGroups=www-data
 
 [Install]
 WantedBy=multi-user.target
