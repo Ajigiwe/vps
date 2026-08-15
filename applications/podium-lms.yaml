@@ -17,6 +17,7 @@ runtime:
   process_match: "next-server|next start"
 
 nginx:
+  site: /etc/nginx/sites-enabled/podium
   server_name: podiumclass.online
 
 git:
