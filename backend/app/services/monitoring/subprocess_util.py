@@ -4,15 +4,18 @@ from __future__ import annotations
 
 import asyncio
 import shutil
+from pathlib import Path
 
 
 async def run_command(
     *args: str,
     timeout: float = 10.0,
+    cwd: str | Path | None = None,
 ) -> tuple[int, str, str]:
     """Run a subprocess asynchronously and return (code, stdout, stderr)."""
     proc = await asyncio.create_subprocess_exec(
         *args,
+        cwd=cwd,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )

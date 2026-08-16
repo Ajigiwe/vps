@@ -26,6 +26,8 @@ class ApplicationRuntimeConfig(BaseModel):
     supervisor: str | None = None
     systemd: str | None = None
     process_match: str | None = None
+    compose: str | None = None
+    compose_service: str | None = None
 
 
 class ApplicationNginxConfig(BaseModel):

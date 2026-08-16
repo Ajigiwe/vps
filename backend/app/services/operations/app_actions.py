@@ -50,6 +50,67 @@ class ApplicationActionsService:
             return Path(app.deployment.history_dir)
         return self._resolve_root(app) / ".Podium" / "deployments"
 
+    def _resolve_compose_file(self, app: ApplicationDefinition) -> Path | None:
+        binding = app.runtime.compose
+        if not binding:
+            return None
+        path = Path(binding)
+        if not path.is_absolute():
+            base = Path(app.source_file).parent if app.source_file else Path.cwd()
+            path = (base / path).resolve()
+        if path.is_dir():
+            for candidate in ("docker-compose.yml", "docker-compose.yaml", "compose.yaml", "compose.yml"):
+                candidate_path = path / candidate
+                if candidate_path.exists():
+                    return candidate_path
+            return None
+        return path
+
+    async def _compose_action(
+        self,
+        app: ApplicationDefinition,
+        *,
+        action: str,
+        build: bool = False,
+        triggered_by: str,
+    ) -> OperationResult:
+        docker = resolve_binary("docker")
+        if not docker:
+            return OperationResult(success=False, message="docker not available.")
+
+        compose_file = self._resolve_compose_file(app)
+        if not compose_file or not compose_file.exists():
+            return OperationResult(
+                success=False,
+                message=f"Compose file not found: {app.runtime.compose or 'unset'}",
+            )
+
+        args = [docker, "compose", "-f", str(compose_file)]
+        if action == "up":
+            args += ["up", "-d"]
+            if build:
+                args.append("--build")
+        else:
+            args.append(action)
+        if app.runtime.compose_service and action in {"up", "start", "stop", "restart"}:
+            args.append(app.runtime.compose_service)
+
+        code, stdout, stderr = await run_command(
+            *args, timeout=600 if build else 120, cwd=str(compose_file.parent)
+        )
+        ok = code == 0
+        label = f"docker compose {action}{' --build' if build else ''}"
+        return OperationResult(
+            success=ok,
+            message=stdout or stderr or label,
+            details={
+                "compose_file": str(compose_file),
+                "action": action,
+                "build": build,
+                "triggered_by": triggered_by,
+            },
+        )
+
     async def git_pull(self, app_id: str, *, triggered_by: str = "system") -> OperationResult:
         app = self._get_app(app_id)
         repo = app.git.repository or str(self._resolve_root(app))
@@ -93,7 +154,12 @@ class ApplicationActionsService:
         resolved_version = version or git_status.commit or app.version or "unknown"
 
         if restart and status != "failed":
-            restart_result = await self.restart_app(app_id, triggered_by=triggered_by)
+            if app.runtime.compose:
+                restart_result = await self._compose_action(
+                    app, action="up", build=True, triggered_by=triggered_by
+                )
+            else:
+                restart_result = await self.restart_app(app_id, triggered_by=triggered_by)
             if not restart_result.success:
                 errors.append(restart_result.message)
                 status = "failed" if not restart_result.details.get("skipped") else status
@@ -153,6 +219,9 @@ class ApplicationActionsService:
         if app.runtime.supervisor:
             return await self._supervisor_action(app.runtime.supervisor, "restart", triggered_by)
 
+        if app.runtime.compose:
+            return await self._compose_action(app, action="up", triggered_by=triggered_by)
+
         if self._nginx_sites.resolve_site_name(app):
             reload_result = await self._nginx_sites.reload()
             return OperationResult(
@@ -186,6 +255,12 @@ class ApplicationActionsService:
 
         if app.runtime.supervisor and action in {"start", "stop", "restart"}:
             return await self._supervisor_action(app.runtime.supervisor, action, triggered_by)
+
+        if app.runtime.compose and action in {"start", "stop", "restart"}:
+            if action in {"start", "restart"}:
+                return await self._compose_action(app, action="up", triggered_by=triggered_by)
+            if action == "stop":
+                return await self._compose_action(app, action="stop", triggered_by=triggered_by)
 
         if self._nginx_sites.resolve_site_name(app):
             if action in {"enable", "start"}:
