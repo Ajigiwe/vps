@@ -1,0 +1,42 @@
+id: academic-hub
+name: Academic Hub
+type: nodejs
+environment: production
+enabled: true
+description: Academic Hub past question marketplace (Docker Compose)
+version: "1.0.0"
+tags:
+  - product
+  - education
+  - docker
+
+paths:
+  root: /srv/academic-hub
+  logs: []
+
+runtime:
+  process_match: "next-server|next start"
+  compose: /srv/academic-hub/deploy/docker-compose.app.yml
+  compose_service: app
+
+nginx:
+  site: /etc/nginx/sites-enabled/academic
+  server_name: academichub.podiumclass.online
+
+git:
+  repository: /srv/academic-hub
+
+ssl:
+  domain: academichub.podiumclass.online
+
+deployment:
+  enabled: true
+
+backup:
+  enabled: false
+
+domains:
+  enabled: false
+
+email:
+  enabled: false

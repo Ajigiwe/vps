@@ -1,0 +1,39 @@
+id: minio
+name: MinIO
+type: nodejs
+environment: production
+enabled: true
+description: MinIO object storage server
+version: "latest"
+tags:
+  - infrastructure
+  - storage
+  - docker
+
+paths:
+  root: /
+  logs: []
+
+runtime:
+  process_match: "minio"
+
+nginx:
+  server_name: storage.podiumclass.online
+
+git:
+  repository: null
+
+ssl:
+  domain: storage.podiumclass.online
+
+deployment:
+  enabled: false
+
+backup:
+  enabled: false
+
+domains:
+  enabled: false
+
+email:
+  enabled: false

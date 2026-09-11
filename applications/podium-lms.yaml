@@ -3,11 +3,12 @@ name: Podium LMS
 type: nodejs
 environment: production
 enabled: true
-description: Podium LMS web application
+description: Podium LMS web application (Docker Compose)
 version: "1.0.0"
 tags:
   - product
   - lms
+  - docker
 
 paths:
   root: /opt/podium
@@ -15,19 +16,21 @@ paths:
 
 runtime:
   process_match: "next-server|next start"
+  compose: /opt/podium/docker-compose.yml
+  compose_service: lite-lms
 
 nginx:
   site: /etc/nginx/sites-enabled/podium
   server_name: podiumclass.online
 
 git:
-  repository: null
+  repository: /opt/podium
 
 ssl:
   domain: podiumclass.online
 
 deployment:
-  enabled: false
+  enabled: true
 
 backup:
   enabled: false

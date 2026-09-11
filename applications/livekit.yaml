@@ -1,0 +1,39 @@
+id: livekit
+name: LiveKit
+type: nodejs
+environment: production
+enabled: true
+description: LiveKit WebRTC server for real-time video/audio
+version: "latest"
+tags:
+  - infrastructure
+  - webrtc
+  - docker
+
+paths:
+  root: /
+  logs: []
+
+runtime:
+  process_match: "livekit-server"
+
+nginx:
+  server_name: livekit.podiumclass.online
+
+git:
+  repository: null
+
+ssl:
+  domain: livekit.podiumclass.online
+
+deployment:
+  enabled: false
+
+backup:
+  enabled: false
+
+domains:
+  enabled: false
+
+email:
+  enabled: false
