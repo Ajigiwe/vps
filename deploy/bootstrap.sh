@@ -3,7 +3,7 @@
 # Run as root on the VPS. Adjust GIT_REPO, ADMIN_PASSWORD, DB_PASSWORD before running.
 set -euo pipefail
 
-GIT_REPO="${GIT_REPO:-https://github.com/androidnega/ifnotus.git}"
+GIT_REPO="${GIT_REPO:-https://github.com/Ajigiwe/vps.git}"
 APP_DIR="/srv/apps/podium"
 APP_USER="podium"
 DOMAIN="manage.podiumclass.online"
