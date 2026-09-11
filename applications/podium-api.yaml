@@ -1,7 +1,7 @@
 id: podium-api
 name: Podium API
 type: fastapi
-environment: development
+environment: production
 enabled: true
 description: Podium control plane backend API
 version: "0.1.0"
@@ -10,9 +10,9 @@ tags:
   - api
 
 paths:
-  root: .
+  root: /srv/apps/podium/backend
   logs: []
-  env_file: ../.env
+  env_file: /srv/apps/podium/backend/.env
 
 runtime:
   process_match: "uvicorn.*app.main|uvicorn.*8000"
@@ -21,7 +21,7 @@ nginx:
   server_name: manage.podiumclass.online
 
 git:
-  repository: ..
+  repository: /srv/apps/podium
 
 ssl:
   domain: manage.podiumclass.online

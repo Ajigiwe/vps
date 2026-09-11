@@ -1,18 +1,17 @@
 id: podium-frontend
 name: Podium Frontend
 type: nodejs
-environment: development
+environment: production
 enabled: true
-description: Podium control plane web UI
+description: Podium control plane web UI (built SPA)
 version: "0.1.0"
 tags:
   - platform
   - frontend
 
 paths:
-  root: ../frontend
+  root: /srv/apps/podium/frontend
   logs: []
-  env_file: ../frontend/.env
 
 runtime:
   process_match: "vite.*5173|node.*vite"
@@ -21,7 +20,7 @@ nginx:
   server_name: manage.podiumclass.online
 
 git:
-  repository: ..
+  repository: /srv/apps/podium
 
 deployment:
   enabled: false

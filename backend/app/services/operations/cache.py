@@ -57,12 +57,16 @@ CLEARABLE_SCAN_PATHS = [
 ]
 
 
-def _dir_size_bytes(path: Path) -> int:
+def _dir_size_bytes(path: Path, *, max_files: int = 5000) -> int:
     total = 0
+    visited = 0
     try:
         if path.is_file():
             return path.stat().st_size
         for child in path.rglob("*"):
+            visited += 1
+            if visited > max_files:
+                break
             try:
                 if child.is_file():
                     total += child.stat().st_size
@@ -80,6 +84,9 @@ def measure_clearable_paths(root: Path) -> tuple[list, int]:
     if not root.exists():
         return [], 0
     root = root.resolve()
+    # Skip scanning for system roots or extremely large directories.
+    if str(root) in ("/", "/var", "/usr", "/etc", "/proc", "/sys", "/dev"):
+        return [], 0
     found: list[ClearablePathSchema] = []
     total = 0
     seen: set[str] = set()
